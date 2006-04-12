@@ -1,0 +1,43 @@
+Revision history for POE::Component::Generic.
+
+0.07 Wed Apr 12 2006
+    - Added documentation
+    - Added __callback_argument and __postback_arguement
+    - Use Scalar::Util::reftype instead of ref()
+    - Added __package_register
+    - Added PoCo::Generic::Net::SSH2->exec and ->cmd
+    - Fixed PoCo::Generic::Object->DESTROY
+    - Added test cases to improve test coverage
+
+0.06 Tue Apr 11 2006
+    - Added PoCo::Generic::Net::SSH2
+    - Added t/91_ssh2.t which tests the above
+    - Added t/90_ssh.t which tests Net::SSH::Perl
+    - Added options to Makefile.PL to config the above 2 tests
+    - Added Generic->package_register
+    - Added Generic->new options :
+            - packages to configure factory generated packages
+            - child_package so we can overload the Child process behaviour
+    - Object IDs now get incremented properly
+    - Child now uses get_requests to fetch the next requests
+
+0.05 Mon Apr 10 2006
+    - Major refactoring
+    - Added factory methods
+    - Split spawn() and new() apart
+
+0.04 Thu Apr 6 2006
+    - Added callbacks
+    - Renamed all the wheel_* events to __wheel_* so that the only
+      method name that can't be called on an object is 'shutdown'.
+
+0.03 Thu Apr 6 2006
+    - Added callbacks -- still need postbacks
+
+0.02 Thu Apr 6 2006
+    - Brown paper bag edition
+    - Removed Data::Denter usage from test cases
+    - Updated README
+
+0.01 Wed Apr 5 2006
+    - first version based on my module poco client daap
