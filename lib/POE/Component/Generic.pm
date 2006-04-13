@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm,v 1.3 2006/04/11 08:33:12 fil Exp $
+# $Id: Generic.pm,v 1.5 2006/04/13 18:52:05 fil Exp $
 
 use strict;
 
@@ -11,11 +11,11 @@ use POE::Component::Generic::Child;
 use POE::Component::Generic::Object;
 use Carp qw(carp croak);
 use Devel::Symdump;
-use vars qw($AUTOLOAD);
+use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-our $VERSION = '0.07';
+$VERSION = '0.08';
 
 
 ##########################################################################
@@ -43,8 +43,8 @@ sub spawn
                                 ( options => $options ) : () ),
         )->ID();
 
-    warn "session $self->{session_id} created for $self->{package}" 
-          if ($self->{debug});
+    $self->{debug} 
+        and warn "session $self->{session_id} created for $self->{package}";
     
     return $self;
 }
@@ -204,8 +204,8 @@ sub _start
             $perl .= " $ENV{HARNESS_PERL_SWITCHES}";
         }
                         
-        %prog = (Program =>  "$perl -M".__PACKAGE__
-                  ." -I".join(' -I',@INC)
+        %prog = (Program =>  "$perl -M".ref( $self )
+                  ." -I".join( ' -I', map quotemeta, @INC )
                   ." -e '".__PACKAGE__."::process_requests(qq(\Q$child_p\E),qq(\Q$self->{name}\E), 1)'");
         $self->{debug} and 
             warn "Launching $prog{Program}";
@@ -866,10 +866,10 @@ L<POE::Wheel::Run> and creating the object in the child process.  Method
 calls are then serialised and sent to the child to be handled.  Return
 values are posted back to your session. This means that all method arguments
 and return values must survive serialisation.  If you need to pass coderefs,
-use L<callbacks>, L<postbacks> or L<factories>.
+use L</callbacks>, L</postbacks> or L</factories>.
 
 Method calls are wrapped in C<eval> in the child process so that errors may
-be propagated back to your session.  See L<OUTPUT>.
+be propagated back to your session.  See L</OUTPUT>.
 
 Output to STDERR in the child is shown only if C<debug> or C<verbose> is
 set.
@@ -896,7 +896,7 @@ hash of arguments, of which all but C<package> are optional.
 =item alias
 
 Session alias to register with the kernel.  Also used as the child processes'
-name.  See L<STATUS> below. Default is none.
+name.  See L</STATUS> below. Default is none.
 
 =item alt_fork
 
@@ -921,7 +921,7 @@ List of methods that have callbacks in their parameter list.
 A callback is a coderef that the object will only use during that method
 call. After the method returns, the callback will be invalidated.  If you
 need to pass a coderef that must last longer then one method, use
-L<postbacks>.
+L</postbacks>.
 
 When one of the methods in C<callbacks> is called, any coderefs in the
 parameters are converted into a message to the child process to propagate
@@ -955,13 +955,13 @@ a statement handle object, so it is an object factory.
 
 The first value of the return argument is assumed to be the object.  It is
 kept in the child process.  Your return event will receive a proxy object
-that will allow you to use the L<yield>, L<call> and L<psuedo-method> calls, 
+that will allow you to use the L</yield>, L</call> and L</psuedo-method> calls, 
 as documented below.
 
 See L<POE::Component::Generic::Object> for details.
 
 You should configure package signatures for the proxy objects with
-L<packages>.
+L</packages>.
 
 =item methods
 
@@ -995,17 +995,17 @@ C<spawn> or C<create>, searching in that order.
 =item packages
 
 Set the I<package signature> for packages that might be used.  This allows 
-you to configure the L<callbacks>, L<postbacks> and L<methods> for 
+you to configure the L</callbacks>, L</postbacks> and L</methods> for 
 objects that are returned by factory methods.
 
 Must be a hashref, keys are package names, values are either a B<scalar>,
 which will case the package will be scanned for methods, a B<arrayref>,
-which is taken as a list of L<methods>, or a B<hashref>, which gives you full
-control.  The B<hashref> may contain the keys L<methods>, L<callbacks> and
-L<postbacks>, which work as described above and below.
+which is taken as a list of L</methods>, or a B<hashref>, which gives you full
+control.  The B<hashref> may contain the keys L</methods>, L</callbacks> and
+L</postbacks>, which work as described above and below.
 
 It is also possible to specify the package signature for the main object
-with L<packages>.
+with L</packages>.
 
 Example:
 
@@ -1083,10 +1083,10 @@ The child process will of course wait if the object is in a blocking method.
 Note that this is also a POE event, which means you can not call a method
 named 'shutdown' on your object.
 
-Shuting down if there are response pending (see L<OUTPUT> below) is
+Shuting down if there are response pending (see L</OUTPUT> below) is
 undefined.
 
-Note that L<shutdown> will not cause the kernel to exit if you have other
+Note that L</shutdown> will not cause the kernel to exit if you have other
 components or sessions keeping POE from doing so.
 
 
@@ -1105,7 +1105,7 @@ if you don't want to use aliases.
 There are 4 ways of calling methods on the object.
 
 All methods need a data hashref that will be handed back to the return
-event.  This data hash is discussed in the L<INPUT> section.
+event.  This data hash is discussed in the L</INPUT> section.
 
 =head2 post
 
@@ -1120,7 +1120,7 @@ post.
 
 This method provides an alternative object based means of asynchronisly
 calling methods on the object. First argument is the method to call, second
-is the data hashref (described in L<INPUT>), following arguments are sent as arguments to the
+is the data hashref (described in L</INPUT>), following arguments are sent as arguments to the
 resultant post.
 
   $generic->yield( open => { event => 'result' }, "localhost" );
@@ -1129,18 +1129,18 @@ resultant post.
 
 This method provides an alternative object based means of synchronisly
 calling methods on the object. First argument is the event to call, second
-is the data hashref (described in L<INPUT>), following arguments are
+is the data hashref (described in L</INPUT>), following arguments are
 following arguments are sent as arguments to the resultant call.
 
   $generic->call( open => { event => 'result' }, "localhost" );
 
-L<Call> returns a request ID which may be matched with the response.  
+L<Call|/call> returns a request ID which may be matched with the response.  
 NOT IMPLEMENTED.
 
 =head2 psuedo-method
 
 All methods of the object can also be called directly, but the first
-argument must be the data hashref as noted in the L<INPUT> section.
+argument must be the data hashref as noted in the L</INPUT> section.
 
     $generic->open( { event => 'opened' }, "localhost" );
 
@@ -1157,7 +1157,7 @@ The data hashref may have the following keys.
 
 =item data
 
-Opaque data element that will be present in the L<OUTPUT> hash.  While it
+Opaque data element that will be present in the L</OUTPUT> hash.  While it
 is possible that other hash members will also work for now, only this one
 is reserved for your use.
 
@@ -1173,7 +1173,7 @@ No response is sent if C<event> is missing.
 
 Don't call the method on the main object, but rather on this object.
 Value is the ID of an object returned by a factory method.  Doesn't work
-for L<Psuedo-method> calls.
+for L</psuedo-method> calls.
 
 =item session
 
@@ -1184,7 +1184,7 @@ session. Abuse with caution.
 
 Should the method be called in array context (1), scalar context (0) or void
 context (undef)?  Defaults to void context, unless you specify a response
-L<event>, in which case it defaults to scalar context.
+L</event>, in which case it defaults to scalar context.
 
 =back
 
@@ -1204,7 +1204,7 @@ any.
 
 =item data
 
-Opaque value that was set in L<INPUT>.
+Opaque value that was set in L</INPUT>.
 
 =item error
 
@@ -1283,7 +1283,7 @@ Work:
 
     my $coderef = $self->__callback_argument( $event, \%args );
 
-Converts argument into a coderef appropriate for L<callbacks>.  
+Converts argument into a coderef appropriate for L</callbacks>.  
 
 Returns C<$args{ "${event}Sub" }> if present.
 
@@ -1295,7 +1295,7 @@ Returns C<undef()> otherwise.
 
 =head2 __postback_argument
 
-Converts argument into a POE event call appropriate for L<postbacks>.  
+Converts argument into a POE event call appropriate for L</postbacks>.  
 
 Returns C<$args{ "${event}Event" }> if present.
 

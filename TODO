@@ -20,5 +20,5 @@
     { event=>"foo2" }
 - The object returned by ->spawn and used to call methods needs to be
     different from the object used internaly by PoCo::Generic so we stop
-    poluting its namespace
+    polluting its namespace
 

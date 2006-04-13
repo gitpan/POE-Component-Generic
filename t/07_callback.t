@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 07_callback.t,v 1.1 2006/04/11 08:33:12 fil Exp $
+# $Id: 07_callback.t,v 1.2 2006/04/12 08:13:22 fil Exp $
 
 use strict;
 

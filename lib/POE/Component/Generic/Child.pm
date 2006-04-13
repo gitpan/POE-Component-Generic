@@ -1,5 +1,5 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm,v 1.3 2006/04/11 08:33:12 fil Exp $
+# $Id: Child.pm,v 1.4 2006/04/12 08:13:22 fil Exp $
 
 # This is the object that does all the work in the child process
 

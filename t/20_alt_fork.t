@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 20_alt_fork.t,v 1.2 2006/04/07 20:21:22 fil Exp $
+# $Id: 20_alt_fork.t,v 1.3 2006/04/12 08:13:22 fil Exp $
 
 use strict;
 

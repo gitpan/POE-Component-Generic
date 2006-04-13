@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t,v 1.2 2006/04/10 23:38:41 fil Exp $
+# $Id: 40_postback.t,v 1.3 2006/04/12 08:13:22 fil Exp $
 
 use strict;
 

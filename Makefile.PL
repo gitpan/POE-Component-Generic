@@ -5,7 +5,11 @@ use ExtUtils::MakeMaker;
 use Getopt::Long;
 use Data::Dumper;
 
-eval "use ExtUtils::MakeMaker::Coverage;";
+eval "
+    use ExtUtils::MakeMaker::Coverage;
+    my \$config = ExtUtils::MakeMaker::Coverage->config;
+    \$config->ignore( ['\bsite_perl\b'] );
+";
 
 my $HELP = 0;
 my %config = (
@@ -18,6 +22,7 @@ my %config = (
 );
 
 ###########################################################
+my @args = @ARGV;
 my $res = GetOptions ( "ssh-host=s" => \$config{ssh}{host}, 
                        "ssh-port=i" => \$config{ssh}{port}, 
                        "ssh-user=s" => \$config{ssh}{user}, 
@@ -40,6 +45,8 @@ For testing Net::SSH::Perl
 HELP
 }
 
+# @ARGV=@args;
+
 ###########################################################
 open CONFIG, ">t/Config.pm" or die "Unable to create t/Config.pm: $!";
 my $conf = Dumper \%config;
@@ -53,7 +60,9 @@ CONFIG
 close CONFIG;
 
 
+
 ###########################################################
+
 WriteMakefile(
 	NAME          => 'POE::Component::Generic',
 	AUTHOR        => 'Philip Gwyn <gwyn@cpan.org>',
@@ -71,3 +80,5 @@ WriteMakefile(
 		SUFFIX    => 'gz',
 	},
 );
+
+

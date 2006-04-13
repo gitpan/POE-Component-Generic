@@ -1,8 +1,9 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm,v 1.1 2006/04/11 08:33:12 fil Exp $
+# $Id: SSH2.pm,v 1.3 2006/04/13 18:52:05 fil Exp $
 
 use strict;
 
+use POE::Component::Generic;
 use POE::Component::Generic::Child;
 
 use Carp qw(carp croak);
@@ -11,9 +12,7 @@ use vars qw( @ISA $TIMEOUT $VERSION );
 use Net::SSH2;
 
 $VERSION = '0.06';
-
 @ISA = qw( POE::Component::Generic );
-
 $TIMEOUT = 100;
 
 ##########################################################
@@ -63,10 +62,12 @@ use strict;
 
 use IO::Poll qw(POLLRDNORM POLLIN);
 use Scalar::Util qw( reftype );
+use vars qw( @ISA );
 
 sub DEBUG () { 0 }
 
-our @ISA = qw( POE::Component::Generic::Child );
+@ISA = qw( POE::Component::Generic::Child );
+
 
 sub new
 {
@@ -75,7 +76,6 @@ sub new
 
     $self->{timeout} ||= $POE::Component::Generic::Net::SSH2::TIMEOUT;
     
-    $Net::SSH2::Channel::CHILD = $self;
     $Net::SSH2::CHILD = $self;
     return $self;
 }
@@ -202,13 +202,12 @@ sub poll_stdin
 # Extend Net::SSH2
 #   Net::SSH2 doesn't play nicely with subclassing, so we just throw
 #   Things into their namespace.
-package Net::SSH2;
+package             # On 2 lines so the PAUSE indexer doesn't gripe
+    Net::SSH2;
+
 use strict;
-
-sub DEBUG () { 0 }
-
 use vars qw( $CHILD );
-
+sub DEBUG () { 0 }
 
 #################################
 # This method does the heavy-lifting for ->exec
@@ -257,20 +256,18 @@ sub cmd
 # Extend Net::SSH2::Channel
 #   Net::SSH2 doesn't play nicely with subclassing, so we just throw
 #   things into their namespace.
-package Net::SSH2::Channel;
+package                     # on 2 lines so PAUSE indexer doesn't gripe
+    Net::SSH2::Channel;
+
 use strict;
-
 sub DEBUG () { 0 }
-
-use vars qw( $CHILD );
-
 
 sub handler_stdout
 {
     my( $self, $coderef ) = @_;
 
     DEBUG and warn "handler_stdout";
-    $CHILD->__handler( $self, 'in', $coderef );
+    $Net::SSH2::CHILD->__handler( $self, 'in', $coderef );
 }
 
 sub handler_stderr
@@ -278,7 +275,7 @@ sub handler_stderr
     my( $self, $coderef ) = @_;
 
     DEBUG and warn "handler_stderr";
-    $CHILD->__handler( $self, 'ext', $coderef );
+    $Net::SSH2::CHILD->__handler( $self, 'ext', $coderef );
 }
 
 sub handler_closed
@@ -286,7 +283,7 @@ sub handler_closed
     my( $self, $coderef ) = @_;
 
     DEBUG and warn "handler_closed";
-    $CHILD->__handler( $self, 'channel_closed', $coderef );
+    $Net::SSH2::CHILD->__handler( $self, 'channel_closed', $coderef );
 }
 
 sub cmd
@@ -326,7 +323,7 @@ sub cmd
 sub DESTROY
 {
     my( $self ) = @_;
-    $CHILD->__remove_channel( $self ) if $CHILD;
+    $Net::SSH2::CHILD->__remove_channel( $self ) if $Net::SSH2::CHILD;
 }
 
 1;
@@ -595,6 +592,21 @@ it under the same terms as Perl itself.
 
 
 $Log: SSH2.pm,v $
+Revision 1.3  2006/04/13 18:52:05  fil
+New vs spawn in the examples
+Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer
+        doesn't complain
+PoCo::Generic::Net::SSH2 now works with alt_fork=>1
+
+Revision 1.2  2006/04/12 08:13:22  fil
+Added documentation
+Added __callback_argument and __postback_arguement
+Use Scalar::Util::reftype instead of ref()
+Added __package_register
+Added PoCo::Generic::Net::SSH2->exec and ->cmd
+Fixed PoCo::Generic::Object->DESTROY
+Added test cases to improve test coverage
+
 Revision 1.1  2006/04/11 08:33:12  fil
 Added PoCo::Generic::Net::SSH2
 Added t/91_ssh2.t which tests the above

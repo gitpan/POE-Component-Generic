@@ -5,7 +5,7 @@ use strict;
 use POE;
 use POE::Component::Generic;
 
-my $obj = POE::Component::Generic->new(
+my $obj = POE::Component::Generic->spawn(
 	package => 'My::Package',
         alias   => 'my-object',
         debug	=> 0,

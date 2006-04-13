@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm,v 1.2 2006/04/10 23:41:37 fil Exp $
+# $Id: Object.pm,v 1.4 2006/04/13 18:52:05 fil Exp $
 
 use strict;
 
@@ -210,7 +210,7 @@ However, it does allow you to control when the object will be reaped.
 There are 3 ways of calling methods on the object.
 
 All methods need a data hashref to specify the response event. This data
-hash is discussed in the L<INPUT> section.
+hash is discussed in the L</INPUT> section.
 
 =head2 yield
 
@@ -236,7 +236,7 @@ resultant method call.
 =head2 Psuedo-method
 
 All methods of the object can be called, but the first param must be the
-data hashref as noted below in the L<INPUT> section below.
+data hashref as noted below in the L</INPUT> section below.
 
 For example:
     
@@ -289,4 +289,19 @@ it under the same terms as Perl itself.
 
 =cut
 
-$Log$
+$Log: Object.pm,v $
+Revision 1.4  2006/04/13 18:52:05  fil
+New vs spawn in the examples
+Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer
+        doesn't complain
+PoCo::Generic::Net::SSH2 now works with alt_fork=>1
+
+Revision 1.3  2006/04/12 08:13:22  fil
+Added documentation
+Added __callback_argument and __postback_arguement
+Use Scalar::Util::reftype instead of ref()
+Added __package_register
+Added PoCo::Generic::Net::SSH2->exec and ->cmd
+Fixed PoCo::Generic::Object->DESTROY
+Added test cases to improve test coverage
+

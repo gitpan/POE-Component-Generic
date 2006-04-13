@@ -1,5 +1,11 @@
 Revision history for POE::Component::Generic.
 
+0.08 Thu Apr 13 2006
+    - New vs spawn in the examples
+    - Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer 
+        doesn't complain
+    - PoCo::Generic::Net::SSH2 now works with alt_fork=>1
+
 0.07 Wed Apr 12 2006
     - Added documentation
     - Added __callback_argument and __postback_arguement
