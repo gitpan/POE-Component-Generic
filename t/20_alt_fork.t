@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 20_alt_fork.t,v 1.3 2006/04/12 08:13:22 fil Exp $
+# $Id: 20_alt_fork.t,v 1.4 2006/04/19 00:24:19 fil Exp $
 
 use strict;
 
@@ -59,7 +59,8 @@ POE::Session->create(
           
           is( $input->{method}, 'delay', "Callback for delay");
           is( $input->{wantarray}, 1, "Wantarray preserved");
-          ok( ($delay == $N or $delay==($N-1)), "Waited $N seconds")
+          my $delta = abs( $delay - $N );
+          ok( ($delta <= 1), "Waited $N seconds")
               or warn "before=$before after=$after delay=$delay";
 
           
@@ -82,8 +83,8 @@ POE::Session->create(
 
           is_deeply( $input->{result}, [ $before, $after ], 
                   "{result} same as ARG1, ARG2" );
-          ok( ($delay == (2*$N) or $delay==(1+2*$N)), 
-                          "Waited ".(2*$N)." seconds" )
+          my $delta = abs( $delay - 2*$N );
+          ok( ($delta <= 1), "Waited ".(2*$N)." seconds" )
               or warn "before=$before after=$after delay=$delay";
 
           $poe_kernel->yield( 'yield' );

@@ -5,23 +5,35 @@ use ExtUtils::MakeMaker;
 use Getopt::Long;
 use Data::Dumper;
 
-eval "
+# Add in the Ex::MM::Coverage stuff.  But silently ignore failure.
+eval q{
     use ExtUtils::MakeMaker::Coverage;
-    my \$config = ExtUtils::MakeMaker::Coverage->config;
-    \$config->ignore( ['\bsite_perl\b'] );
-";
+    # I keep some modules outside of /usr/lib/perl5
+    my $config = ExtUtils::MakeMaker::Coverage->config;
+    $config->ignore( ['site_perl'] ); 
+};
 
+###########################################################
 my $HELP = 0;
 my %config = (
     ssh=>{
         host => 'localhost',
         port => 22,
-        user => scalar(getpwuid($<)),
+        user => '',
         password => '',
     }
 );
+if( $^O =~ /MSWin32/ ) {
+    eval q{
+        use Win32;  
+        $config{ssh}{user} = Win32::LoginName() unless Win32::IsWin95();
+    };
+}
+else {
+    $config{ssh}{user} = getpwuid($<);
+}
 
-###########################################################
+
 my @args = @ARGV;
 my $res = GetOptions ( "ssh-host=s" => \$config{ssh}{host}, 
                        "ssh-port=i" => \$config{ssh}{port}, 

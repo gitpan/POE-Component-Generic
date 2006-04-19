@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm,v 1.5 2006/04/13 18:52:05 fil Exp $
+# $Id: Generic.pm,v 1.6 2006/04/19 00:24:19 fil Exp $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.08';
+$VERSION = '0.0902';
 
 
 ##########################################################################
@@ -203,10 +203,11 @@ sub _start
         if( $ENV{HARNESS_PERL_SWITCHES} ) {
             $perl .= " $ENV{HARNESS_PERL_SWITCHES}";
         }
-                        
+        my $os_quote = ($^O eq 'MSWin32') ? q(") : q(');
+
         %prog = (Program =>  "$perl -M".ref( $self )
                   ." -I".join( ' -I', map quotemeta, @INC )
-                  ." -e '".__PACKAGE__."::process_requests(qq(\Q$child_p\E),qq(\Q$self->{name}\E), 1)'");
+                  ." -e $os_quote".__PACKAGE__."::process_requests(qq(\Q$child_p\E),qq(\Q$self->{name}\E), 1)$os_quote");
         $self->{debug} and 
             warn "Launching $prog{Program}";
     }

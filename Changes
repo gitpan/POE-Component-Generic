@@ -1,5 +1,13 @@
 Revision history for POE::Component::Generic.
 
+0.0901 Tue Apr 18 2006
+    - Fix alt_fork for MSWin32.  Reported working by BinGOs, thank you.
+
+0.09 Tue Apr 18 2006
+    - Fix Ext::MM::Coverage->ignore in Makefile.PL
+    - Use Win32::LoginName on MSWin32 in Makefile.PL
+    - Tests now check delay within one second
+
 0.08 Thu Apr 13 2006
     - New vs spawn in the examples
     - Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer 
