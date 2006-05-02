@@ -1,5 +1,10 @@
 Revision history for POE::Component::Generic.
 
+0.0902 Tue May 2 2006
+    - In child, dup STDOUT to talk to parent and dup STDERR to STDOUT so
+      that user code can't mess up the output.
+            Thanks to Jeremy Palmer for pushing me into this idea.
+
 0.0901 Tue Apr 18 2006
     - Fix alt_fork for MSWin32.  Reported working by BinGOs, thank you.
 

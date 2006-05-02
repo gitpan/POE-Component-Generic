@@ -16,6 +16,7 @@ t/05_package.t
 t/07_callback.t
 t/08_factory.t
 t/10_simple.t
+t/15_stdout.t
 t/20_alt_fork.t
 t/30_callback.t
 t/40_postback.t

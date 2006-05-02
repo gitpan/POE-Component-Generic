@@ -51,7 +51,7 @@ exit 0 unless $conf;
 
 ##########################################
 my $ssh = POE::Component::Generic::Net::SSH2->spawn(
-                alias    => 'my-ssh',
+                alias    => 'my-ssh2',
                 verbose  => 1,
                 alt_fork => 1,
                 debug    => DEBUG,

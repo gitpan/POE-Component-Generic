@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 10_simple.t,v 1.4 2006/04/19 00:24:19 fil Exp $
+# $Id: 10_simple.t,v 1.5 2006/05/02 18:44:22 fil Exp $
 
 use strict;
 
@@ -19,6 +19,7 @@ my $generic = POE::Component::Generic->spawn(
           alias => 'first',
           package => 't::P10',
           object_options => [ delay=>$N ],
+          verbose => 0,
           debug => DEBUG
       );
 

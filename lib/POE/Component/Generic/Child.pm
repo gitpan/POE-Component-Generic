@@ -1,9 +1,11 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm,v 1.4 2006/04/12 08:13:22 fil Exp $
+# $Id: Child.pm,v 1.5 2006/05/02 18:44:22 fil Exp $
 
 # This is the object that does all the work in the child process
 
 use strict;
+use Symbol;
+
 
 ##################################################
 # Called from Generic::process_requests
@@ -11,6 +13,7 @@ sub new
 {
     my( $package, %params ) = @_;
     my $self = bless { %params }, $package;
+
     $self->{filter} = POE::Filter::Reference->new();
 
     # there's room for other callbacks
@@ -20,8 +23,34 @@ sub new
     $params{ID} =~ s/[^A-Za-z0-9]+/A/g;
     $self->{object_id} = "$params{ID}OBJ000000";
 
+    $self->init_handles;
+
     return $self;
 }
+
+##################################################
+# Setup handles we want to play with
+sub init_handles
+{
+    my( $self ) = @_;
+
+    my $myout = $self->{myout} = gensym;
+
+    # Redirect STDOUT to STDERR, so that badly behaved user code doesn't
+    # mess up our communication with the parent
+    open $myout, ">&STDOUT" or die "Can't dup STDOUT: $!\n";
+    open STDOUT, ">&STDERR" or die "Can't dup STDERR: $!\n";
+
+    # binmode so that Storable refs can make it across
+    binmode(STDIN);
+    binmode(STDOUT);
+    binmode($myout);
+    # No buffers for us
+    STDOUT->autoflush(1);
+    $myout->autoflush(1);
+
+}
+ 
 
 ##################################################
 # Main loop.  
@@ -94,7 +123,9 @@ sub reply
     # use Data::Denter;
     # warn "reply=", Denter $resp;
     my $replies = $self->{filter}->put( [ $resp ] );
-    print STDOUT @$replies;
+    
+    my $rv = $self->{myout}->print( join '', @$replies );
+    die "STDOUT: $!" unless $rv;
 }
 
 

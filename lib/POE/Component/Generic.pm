@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm,v 1.6 2006/04/19 00:24:19 fil Exp $
+# $Id: Generic.pm,v 1.7 2006/05/02 18:44:22 fil Exp $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.0902';
+$VERSION = '0.0903';
 
 
 ##########################################################################
@@ -548,7 +548,8 @@ sub __wheel_out
 {
     my ($self,$input) = @_[ OBJECT,ARG0 ];
 
-    $self->{debug} and warn "__wheel_out";
+    $self->{debug} and 
+        warn "__wheel_out";
 
     $input->{result} ||= [];
 
@@ -757,10 +758,6 @@ sub process_requests {
     my( $class, $name, $alt_fork ) = @_;
     $alt_fork ||= 0;
 
-    binmode(STDIN);
-    binmode(STDOUT);
-    STDOUT->autoflush(1);
-
     my $ID = $name;
     $ID =~ s/\W/-/g;
 
@@ -864,18 +861,19 @@ POE::Component::Generic - A POE component that provides non-blocking access to a
 POE::Component::Generic is a L<POE> component that provides a non-blocking
 wrapper around any object.  It works by forking a child process with
 L<POE::Wheel::Run> and creating the object in the child process.  Method
-calls are then serialised and sent to the child to be handled.  Return
-values are posted back to your session. This means that all method arguments
-and return values must survive serialisation.  If you need to pass coderefs,
-use L</callbacks>, L</postbacks> or L</factories>.
+calls are then serialised and sent via STDIN to the child to be handled. 
+Return values are posted back to your session via STDOUT. This means that
+all method arguments and return values must survive serialisation.  If you
+need to pass coderefs, use L</callbacks>, L</postbacks> or L</factories>.
 
 Method calls are wrapped in C<eval> in the child process so that errors may
 be propagated back to your session.  See L</OUTPUT>.
 
-Output to STDERR in the child is shown only if C<debug> or C<verbose> is
-set.
+Output to STDERR in the child, that is from your object, is shown only if
+C<debug> or C<verbose> is set.
 
-Output to STDOUT in the child will MESS THINGS UP.  So don't do that.
+STDOUT in the child, that is from your object, is redirected to STDERR and
+will be shown in the same circomstances.
 
 
 =head1 METHODS
