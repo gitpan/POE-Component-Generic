@@ -24,6 +24,7 @@ t/50_factory.t
 t/90_ssh.t
 t/91_ssh2.t
 t/P10.pm
+t/P15.pm
 t/P30.pm
 t/P40.pm
 t/P4.pm

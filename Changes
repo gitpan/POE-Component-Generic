@@ -1,6 +1,9 @@
 Revision history for POE::Component::Generic.
 
-0.0902 Tue May 2 2006
+0.0904 Wed May 3 2006
+    - Forgot to add t/P15.pm to manifest
+
+0.0903 Tue May 2 2006
     - In child, dup STDOUT to talk to parent and dup STDERR to STDOUT so
       that user code can't mess up the output.
             Thanks to Jeremy Palmer for pushing me into this idea.
