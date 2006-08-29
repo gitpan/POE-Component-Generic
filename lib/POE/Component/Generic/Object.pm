@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm,v 1.4 2006/04/13 18:52:05 fil Exp $
+# $Id: Object.pm,v 1.5 2006/08/29 21:47:20 fil Exp $
 
 use strict;
 
@@ -154,18 +154,27 @@ POE::Component::Generic::Object - A POE component that provides non-blocking acc
 
     $generic->build( {event=>'created_foo'}, 'foo' );
 
+    # Note that this happens in a child process
+    sub Builder::build {
+        my( $package, $arg ) = @_;
+        return bless { something=>$arg }, 'Other::Package';
+    }
+
     # in the event "created_foo"
+    # Note that this happens in the parent process
+    sub create_foo {
+        my( $resp, $foo ) = @_[ARG0, ARG1];
+        die $resp->{error} if $resp->{error}
 
-    my( $resp, $foo ) = @_[ARG0, ARG1];
-    die $resp->{error} if $resp->{error}
+        # $foo is a proxy object to what Builder::build returned
+        my $objID = $foo->object_id;        # Unique ID of the object
 
-    my $objID = $foo->object_id;        # Unique ID of the object
+        $foo->vibble( {}, @args );          # call a method on the object foo
+        $foo->yield( 'vibble', {}, @args ); # same as above   
+        $foo->call( 'vibble', {}, @args );  # same as above   
 
-    $foo->vibble( {}, @args );          # call a method on the object foo
-    $foo->yield( 'vibble', {}, @args ); # same as above   
-    $foo->call( 'vibble', {}, @args );  # same as above   
-
-    $generic->vibble( {obj=>$objID}, @args );   # same as above
+        $generic->vibble( {obj=>$objID}, @args );   # same as above
+    }
 
 
 =head1 DESCRIPTION
@@ -290,6 +299,9 @@ it under the same terms as Perl itself.
 =cut
 
 $Log: Object.pm,v $
+Revision 1.5  2006/08/29 21:47:20  fil
+Doco touch-up
+
 Revision 1.4  2006/04/13 18:52:05  fil
 New vs spawn in the examples
 Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer

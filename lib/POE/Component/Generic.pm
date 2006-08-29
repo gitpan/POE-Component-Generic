@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm,v 1.7 2006/05/02 18:44:22 fil Exp $
+# $Id: Generic.pm,v 1.8 2006/08/29 21:47:20 fil Exp $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.0904';
+$VERSION = '0.0905';
 
 
 ##########################################################################
@@ -959,8 +959,8 @@ as documented below.
 
 See L<POE::Component::Generic::Object> for details.
 
-You should configure package signatures for the proxy objects with
-L</packages>.
+You should configure package signatures for the proxy objects that factories
+return with L</packages>.
 
 =item methods
 

@@ -1,5 +1,8 @@
 Revision history for POE::Component::Generic.
 
+0.0905 Tue Aug 29 2006
+    - Better example in PoCo::Generic::Object about factories.
+
 0.0904 Wed May 3 2006
     - Forgot to add t/P15.pm to manifest
 
