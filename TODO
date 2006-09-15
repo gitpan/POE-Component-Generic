@@ -1,5 +1,8 @@
 *TODO*
 
+- Test under 0.37 (signal stuff)
+
+
 - Better contexts for error messages [caller]
 - ->call, ->yield and ->method should return the request/response ID so
     that it can be corrolated with the response.

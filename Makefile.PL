@@ -13,6 +13,7 @@ eval q{
     $config->ignore( ['site_perl'] ); 
 };
 
+
 ###########################################################
 my $HELP = 0;
 my %config = (
@@ -24,6 +25,15 @@ my %config = (
     }
 );
 if( $^O =~ /MSWin32/ ) {
+    warn <<'    WARN';
+************************************************************
+It has come to our attention that POE::Component::Generic
+does not always function correctly on Windows.  We do not
+have the skills nor the time to debug this issue.  We would
+be very pleased if you would solve this for us.  
+    Thank you.
+************************************************************
+    WARN
     eval q{
         use Win32;  
         $config{ssh}{user} = Win32::LoginName() unless Win32::IsWin95();

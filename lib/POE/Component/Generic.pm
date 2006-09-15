@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm,v 1.8 2006/08/29 21:47:20 fil Exp $
+# $Id: Generic.pm,v 1.10 2006/09/15 18:34:59 fil Exp $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.0905';
+$VERSION = '0.0906';
 
 
 ##########################################################################
@@ -692,9 +692,14 @@ sub shutdown {
         $kernel->refcount_decrement($self->session_id() => __PACKAGE__);
     }
     
+    # drop wheel
     if ($self->{wheel}) {
         $self->{wheel}->shutdown_stdin;
     }
+
+    # Remove signal handler
+    $poe_kernel->sig( 'CHLD' );
+
     undef;
 }
 

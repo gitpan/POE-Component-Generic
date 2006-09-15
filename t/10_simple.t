@@ -138,7 +138,8 @@ POE::Session->create(
             ok( $resp->{error}, "I want an error" );
             ok( ( $resp->{error} =~ /VIVA PERON!/ ), "Right-oh" );
 
-            $poe_kernel->yield( 'done' );
+            diag( "$N seconds" );
+            $poe_kernel->delay( 'done', $N );
         },
 
         ############    

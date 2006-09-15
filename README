@@ -9,6 +9,12 @@ It is intended for people who want to use an object that blocks from
 POE with as little pain as possible.
 
 
+NOTE: It has come to our attention that POE::Component::Generic does not
+always function correctly on Windows.  We do not have the skills nor the
+time to debug this issue.  We would be very pleased if you would solve this
+for us.
+
+
 POE::Component::Generic can be installed the usual ways:
 
 Through the CPAN shell:
@@ -31,3 +37,5 @@ The project needs your help.  If you're interested, please contact
 Philip Gwyn at gwyn-at-cpan.org.
 
 Thank you.
+
+

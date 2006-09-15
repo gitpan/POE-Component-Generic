@@ -1,5 +1,9 @@
 Revision history for POE::Component::Generic.
 
+0.0906 Fri Sep 15 2006
+    - Added warning about Windows
+    - Remove sig() handler in shutdown.  POE 0.37 requires this.
+
 0.0905 Tue Aug 29 2006
     - Better example in PoCo::Generic::Object about factories.
 
