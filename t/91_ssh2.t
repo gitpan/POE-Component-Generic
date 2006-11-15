@@ -19,9 +19,11 @@ eval "use POE::Component::Generic::Net::SSH2; \$has_ssh++";
 # warn $@ if $@;
 
 my $N = 1;
+my $alt_fork =1;
 if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;
 }
+$alt_fork = 0 if $^O eq 'MSWin32';
 
 
 ##########################################
@@ -53,7 +55,7 @@ exit 0 unless $conf;
 my $ssh = POE::Component::Generic::Net::SSH2->spawn(
                 alias    => 'my-ssh2',
                 verbose  => 1,
-                alt_fork => 1,
+                alt_fork => $alt_fork,
                 debug    => DEBUG,
             );
 

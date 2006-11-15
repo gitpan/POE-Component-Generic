@@ -11,10 +11,12 @@ use Test::More tests => 19;
 use POE;
 use POE::Component::Generic;
 
+my $alt_fork = 1;
 my $N = 1;
 if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;
 }
+$alt_fork = 0 if $^O eq 'MSWin32';
 
 my $daemon=0;
 #eval "use POE::Component::Daemon; \$daemon++";
@@ -23,7 +25,7 @@ my $generic = POE::Component::Generic->spawn(
           package   => 't::P50',
           methods   => [ qw( new buildthing ) ],
           factories => [ qw( buildthing ) ],
-          alt_fork  => 1,
+          alt_fork  => $alt_fork,
           verbose   => 1,
           debug     => DEBUG
       );

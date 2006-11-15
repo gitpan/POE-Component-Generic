@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 10_simple.t,v 1.5 2006/05/02 18:44:22 fil Exp $
+# $Id: 10_simple.t 128 2006-05-02 18:44:22Z fil $
 
 use strict;
 
@@ -138,8 +138,7 @@ POE::Session->create(
             ok( $resp->{error}, "I want an error" );
             ok( ( $resp->{error} =~ /VIVA PERON!/ ), "Right-oh" );
 
-            diag( "$N seconds" );
-            $poe_kernel->delay( 'done', $N );
+            $poe_kernel->yield( 'done' );
         },
 
         ############    

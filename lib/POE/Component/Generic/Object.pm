@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm,v 1.5 2006/08/29 21:47:20 fil Exp $
+# $Id: Object.pm 129 2006-08-29 21:47:20Z fil $
 
 use strict;
 
@@ -298,7 +298,7 @@ it under the same terms as Perl itself.
 
 =cut
 
-$Log: Object.pm,v $
+$Log$
 Revision 1.5  2006/08/29 21:47:20  fil
 Doco touch-up
 

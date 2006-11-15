@@ -1,4 +1,4 @@
-# $Id: P4.pm,v 1.1.1.1 2006/04/07 20:15:31 fil Exp $
+# $Id: P4.pm 109 2006-04-07 20:15:31Z fil $
 package t::P4;
 use strict;
 
@@ -11,6 +11,6 @@ sub in4 {}
 1;
 __END__
 
-$Log: P4.pm,v $
-Revision 1.1.1.1  2006/04/07 20:15:31  fil
-Log
+$Log$
+Revision 1.1  2006/04/07 20:15:31  fil
+Initial revision

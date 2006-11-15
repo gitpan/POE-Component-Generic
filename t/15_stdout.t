@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 15_stdout.t,v 1.1 2006/05/02 18:44:22 fil Exp $
+# $Id: 15_stdout.t 128 2006-05-02 18:44:22Z fil $
 
 use strict;
 

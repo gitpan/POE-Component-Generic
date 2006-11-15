@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 01_object.t,v 1.1 2006/04/11 08:33:12 fil Exp $
+# $Id: 01_object.t 116 2006-04-11 08:33:12Z fil $
 
 use strict;
 

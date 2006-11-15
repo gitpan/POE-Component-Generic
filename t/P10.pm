@@ -1,4 +1,4 @@
-# $Id: P10.pm,v 1.2 2006/04/12 08:13:22 fil Exp $
+# $Id: P10.pm 117 2006-04-12 08:13:22Z fil $
 package t::P10;
 use strict;
 
@@ -44,7 +44,7 @@ sub die_for_your_country
 1;
 __END__
 
-$Log: P10.pm,v $
+$Log$
 Revision 1.2  2006/04/12 08:13:22  fil
 Added documentation
 Added __callback_argument and __postback_arguement

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 05_package.t,v 1.4 2006/04/12 08:13:22 fil Exp $
+# $Id: 05_package.t 117 2006-04-12 08:13:22Z fil $
 
 use strict;
 

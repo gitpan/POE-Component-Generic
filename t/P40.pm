@@ -1,4 +1,4 @@
-# $Id: P40.pm,v 1.1.1.1 2006/04/07 20:15:31 fil Exp $
+# $Id: P40.pm 109 2006-04-07 20:15:31Z fil $
 package t::P40;
 use strict;
 
@@ -42,7 +42,7 @@ sub twothing
 1;
 __END__
 
-$Log: P40.pm,v $
-Revision 1.1.1.1  2006/04/07 20:15:31  fil
-Log
+$Log$
+Revision 1.1  2006/04/07 20:15:31  fil
+Initial revision
 

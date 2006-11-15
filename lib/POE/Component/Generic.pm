@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm,v 1.10 2006/09/15 18:34:59 fil Exp $
+# $Id: Generic.pm 163 2006-11-15 07:35:36Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.0906';
+$VERSION = '0.0910';
 
 
 ##########################################################################
@@ -25,6 +25,10 @@ sub spawn
     croak "$package needs an even number of parameters" if @args & 1;
 
     my $self = $package->new( @args );
+
+    if( $^O eq 'MSWin32' and $self->{alt_fork} ) {
+        carp "Sorry, alt_fork does not work on MSWin32.";
+    }
 
     my $options = $self->{'options'};
 
@@ -692,14 +696,9 @@ sub shutdown {
         $kernel->refcount_decrement($self->session_id() => __PACKAGE__);
     }
     
-    # drop wheel
     if ($self->{wheel}) {
         $self->{wheel}->shutdown_stdin;
     }
-
-    # Remove signal handler
-    $poe_kernel->sig( 'CHLD' );
-
     undef;
 }
 
@@ -917,6 +916,10 @@ instance.  Make sure that your main C<package> loads all modules that
 it might interact with.
 
 Default is false.
+
+Please note that C<alt_fork> does not currently work on MSWin32.  The problem
+is that C<exec()> is failing in L<POE::Wheel::Run>.  If you can fix that
+I will reactivate C<alt_fork> for MSWin32.
 
 =item callbacks
 

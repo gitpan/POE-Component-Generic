@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm,v 1.3 2006/04/13 18:52:05 fil Exp $
+# $Id: SSH2.pm 126 2006-04-13 18:52:05Z fil $
 
 use strict;
 
@@ -591,7 +591,7 @@ it under the same terms as Perl itself.
 
 
 
-$Log: SSH2.pm,v $
+$Log$
 Revision 1.3  2006/04/13 18:52:05  fil
 New vs spawn in the examples
 Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer
