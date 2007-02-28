@@ -1,5 +1,9 @@
 Revision history for POE::Component::Generic.
 
+0.0911 Mon Dec 4 2006
+    - Moved to subversion.  Removed Log tags.
+    - Versions in PM_PREREQ now numbers
+    
 0.0910 Wed Nov 15 2006
     - Warnings about alt_fork on MSWin32.
     - Skip 20_alt_fork.t.

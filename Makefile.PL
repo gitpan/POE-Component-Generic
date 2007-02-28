@@ -93,9 +93,9 @@ WriteMakefile(
 	PREREQ_PM     => {
 		'Test::More'        => 0.32,
 		'POE'               => 0.31,
-        'Scalar::Util'      => undef,
-		'Devel::Symdump'	=> undef,
-		'Carp'			    => undef,
+        'Scalar::Util'      => 0,
+		'Devel::Symdump'	=> 0,
+		'Carp'			    => 0,
 	},
 	dist        => {
 		COMPRESS  => 'gzip -9f',

@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 163 2006-11-15 07:35:36Z fil $
+# $Id: Generic.pm 197 2007-02-28 18:37:19Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.0910';
+$VERSION = '0.0911';
 
 
 ##########################################################################
@@ -195,7 +195,6 @@ sub _start
         $kernel->refcount_increment( $self->{session_id} => __PACKAGE__ );
     }
     
-    $poe_kernel->sig( CHLD => '_child' );
     my $child_p = $self->{child_package} || 'POE::Component::Generic::Child';
     my %prog = ( Program => sub{ 
                                   process_requests( $child_p, $self->{name} )
@@ -228,6 +227,17 @@ sub _start
         CloseEvent   => '__wheel_close',
     );
 
+    if( $poe_kernel->can( 'sig_child' ) ) {
+        my $pid = $self->{wheel}->PID;
+        my $state = ref( $self )."--child--".$pid;
+        $poe_kernel->state( $state, sub { $poe_kernel->sig_handled(); } );
+        $poe_kernel->sig_child( $pid, $state );
+    }
+    else {
+        $poe_kernel->sig( CHLD => '_child' );
+    }
+
+    #########
     # Tell the other side to create an object
     $self->{object_options} ||= [];
     unless( ref $self->{object_options} ) {
