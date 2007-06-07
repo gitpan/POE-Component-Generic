@@ -1,4 +1,4 @@
-# $Id: P10.pm 117 2006-04-12 08:13:22Z fil $
+# $Id: P10.pm 198 2007-02-28 18:45:18Z fil $
 package t::P10;
 use strict;
 
@@ -41,19 +41,12 @@ sub die_for_your_country
     die $text;
 }
 
+sub sing
+{
+    my( $self, $text ) = @_;
+    print STDERR $text, "\n";
+}
+    
 1;
 __END__
-
-$Log$
-Revision 1.2  2006/04/12 08:13:22  fil
-Added documentation
-Added __callback_argument and __postback_arguement
-Use Scalar::Util::reftype instead of ref()
-Added __package_register
-Added PoCo::Generic::Net::SSH2->exec and ->cmd
-Fixed PoCo::Generic::Object->DESTROY
-Added test cases to improve test coverage
-
-Revision 1.1.1.1  2006/04/07 20:15:31  fil
-Log
 

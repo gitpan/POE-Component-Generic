@@ -1,4 +1,4 @@
-# $Id: P4.pm 109 2006-04-07 20:15:31Z fil $
+# $Id: P4.pm 198 2007-02-28 18:45:18Z fil $
 package t::P4;
 use strict;
 
@@ -11,6 +11,3 @@ sub in4 {}
 1;
 __END__
 
-$Log$
-Revision 1.1  2006/04/07 20:15:31  fil
-Initial revision

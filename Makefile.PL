@@ -93,8 +93,8 @@ WriteMakefile(
 	PREREQ_PM     => {
 		'Test::More'        => 0.32,
 		'POE'               => 0.31,
-        'Scalar::Util'      => 0,
-		'Devel::Symdump'	=> 0,
+        'Scalar::Util'      => 1,
+		'Devel::Symdump'	=> 2,
 		'Carp'			    => 0,
 	},
 	dist        => {

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t 162 2006-11-15 07:29:21Z fil $
+# $Id: 40_postback.t 213 2007-06-07 05:47:50Z fil $
 
 use strict;
 
@@ -36,6 +36,27 @@ my $generic = POE::Component::Generic->spawn(
 my $C1 = 0;
 my $C2 = 0;
 my $PID = $$;
+
+POE::Session->create(
+    inline_states => {
+        _start => sub {
+            $poe_kernel->alias_set( 'worker1' );
+        },
+
+        _stop => sub {
+            DEBUG and warn "_stop";
+        },
+        
+        otherthing_back => sub {
+            my( $res, $answer ) = @_[ ARG0, ARG1 ];
+            ok( (not exists $res->{error}), "No errors" );
+            is( $answer, 10, "Got the right answer" );
+            $generic->twothing({});
+        },
+    }
+
+
+);
 
 POE::Session->create(
     inline_states => {
@@ -78,15 +99,10 @@ POE::Session->create(
       
         ###############
         otherthing => sub {
-            $generic->otherthing( {event=>'otherthing_back'},
-                                    {event=>'other_postback'},
+            $generic->otherthing( { event=>'otherthing_back', 
+                                    session => 'worker1' },
+                                  { event=>'other_postback'},
                                     0..9 );
-        },
-        otherthing_back => sub {
-            my( $res, $answer ) = @_[ ARG0, ARG1 ];
-            ok( (not exists $res->{error}), "No errors" );
-            is( $answer, 10, "Got the right answer" );
-            $generic->twothing({});
         },
         other_postback => sub {
             my( $answer ) = $_[ ARG0 ];

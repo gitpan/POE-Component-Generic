@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 197 2007-02-28 18:37:19Z fil $
+# $Id: Generic.pm 215 2007-06-07 06:00:11Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.0911';
+$VERSION = '0.1001';
 
 
 ##########################################################################
@@ -80,6 +80,18 @@ sub new
 
     my $self = bless(\%params, $package);
 
+    if( $self->{error} ) {
+        my $rt = reftype $self->{error};
+        unless( $rt ) {
+            $self->{error_session} = $poe_kernel->get_active_session;
+        }
+        elsif( 'HASH' eq $rt ) {
+            @{ $self }{ qw( error_session error ) } = 
+                        @{ $self->{error} }{ qw( session event ) };
+        } 
+    }
+
+    #######
     POE::Component::Generic::Child::package_load( $self->{package} );
     $self->__package_register( $self->{package}, { 
                                 methods   => delete($self->{methods}),
@@ -227,6 +239,7 @@ sub _start
         CloseEvent   => '__wheel_close',
     );
 
+    #########
     if( $poe_kernel->can( 'sig_child' ) ) {
         my $pid = $self->{wheel}->PID;
         my $state = ref( $self )."--child--".$pid;
@@ -326,11 +339,16 @@ sub __request
     if ( keys %$hash ) {
         # id to match in param storage
         $self->{store}->{$RID} = $hash;
+        $hash->{session} = $params->{session};
+        $hash->{package} = $params->{package};
     }
 
     # if we have an event to report to...make sure it stays around
     if ($hash->{event}) {
-        $poe_kernel->refcount_increment( $sender => $self->{name} );
+        $poe_kernel->refcount_increment( $hash->{session} => $self->{name} );
+        # TODO : Above will explode if $hash->{session} isn't an extant
+        # session.  This is OK, but the error message will point here, not
+        # to the user's code.
     }
 
     if( $self->{callback_map}{$class}{ $method } ) {
@@ -581,6 +599,12 @@ sub __wheel_stderr {
 
     warn "ERR:$self->{name}: $input\n" 
                 if $self->{debug} or $self->{verbose};
+
+    if( $self->{error} ) {
+        $poe_kernel->post( $self->{error_session}, $self->{error}, 
+                           { stderr=>$input } 
+                         );
+    }
 }
 
 sub __wheel_err {
@@ -589,6 +613,13 @@ sub __wheel_err {
     warn "Wheel:$self->{name}: Wheel $wheel_id generated $operation error $errnum: $errstr\n" 
             if $self->{debug} or
             ( $self->{verbose} and $errnum != 0 );
+    if( $errnum!=0 and $self->{error} ) {
+        $poe_kernel->post( $self->{error_session}, $self->{error}, 
+                           { operation => $operation, 
+                             errnum    => $errnum,
+                             errstr    => $errstr } 
+                         );
+    }
 }
 
 sub __wheel_close {
@@ -964,6 +995,49 @@ L<POE::Component::Generic::Child>.  For more details, consult the source!
 Set to C<true> to see component debug information, such as anything
 output to STDERR by your code.  Default to C<false>.
 
+=item error
+
+Event that all L<POE::Wheel::Run> errors and text from stderr will be posted
+to.  May be either a hash, in which case it must have C<event> and
+C<session> members, like L</data>.
+
+    POE::Component::Generic->spawn(
+            ....
+            error => { event => 'generic_event',
+                       session => 'error_watcher'
+                     },
+            ....
+        );
+
+If C<error> is a string, it is used as an event in the current session.
+
+    POE::Component::Generic->spawn(
+            ....
+            error => 'generic_error',   # in the current session
+            ....
+        );
+
+When called, C<ARG0> will be a hash reference containing either 1 or 3 keys, 
+depending on the situation:
+
+    sub generic_error 
+    {
+        my( $session, $err ) = @_[ SESSION, ARG0 ];
+        if( $err->{stderr} ) {
+            # $err->{stderr} is a line that was printed to the 
+            # sub-processes' STDERR.  99% of the time that means from 
+            # your code.
+        }
+        else {
+            # Wheel error.  See L<POE::Wheel::Run/ErrorEvent>
+            # $err->{operation}
+            # $err->{errnum}
+            # $err->{errstr}
+        }
+    }
+
+I<Experimental feature.>
+
 =item factories
 
 List of methods that are object factories.  An object factory is one that 
@@ -1086,6 +1160,7 @@ child's PID is reported to STDERR.  All text sent to STDERR in the child
 process is report.  Any abnormal error conditions or exits are also
 reported.  All this reported via warn.
 
+If you wish to have STDERR delivered to your session, use L</error>.
 
 =back
 
@@ -1130,8 +1205,12 @@ Post events to the object. First argument is the event to post, second is
 the data hashref, following arguments are sent as arguments in the resultant
 post.
 
-  $poe_kernel->post( $alias => 'method',
-                        open => { event => 'result' }, "localhost" );
+  $poe_kernel->post( $alias => 'open',
+                        { event => 'result' }, "localhost" );
+
+This will call the C<open> method on your object with one parameter:
+C<localhost>.  The method's return value is posted to C<result> in the 
+current session.
 
 =head2 yield
 
@@ -1326,7 +1405,7 @@ Returns C<undef()> otherwise.
 
 =head1 STATUS
 
-For your comfort and conveinence, the child process update C<$O> to
+For your comfort and conveinence, the child process updates C<$O> to
 tell you what it is doing.  On many systems, C<$O> is available via
 C</proc/$PID/cmdline>.
 
