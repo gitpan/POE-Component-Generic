@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 215 2007-06-07 06:00:11Z fil $
+# $Id: Generic.pm 225 2007-08-14 20:15:52Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1001';
+$VERSION = '0.1002';
 
 
 ##########################################################################
@@ -215,6 +215,7 @@ sub _start
     if ($self->{alt_fork}) {
     
         my $perl = $^X;
+        $perl = $self->{alt_fork} if -x $self->{alt_fork};
         if( $ENV{HARNESS_PERL_SWITCHES} ) {
             $perl .= " $ENV{HARNESS_PERL_SWITCHES}";
         }
@@ -961,6 +962,11 @@ Default is false.
 Please note that C<alt_fork> does not currently work on MSWin32.  The problem
 is that C<exec()> is failing in L<POE::Wheel::Run>.  If you can fix that
 I will reactivate C<alt_fork> for MSWin32.
+
+Note also that if you are running in an embedded perl and L<$^X> does not
+actually point to the perl binary, you may set alt_fork to the path to the
+perl executable.  POE::Component::Generic will make sure that this path is
+executable or will silently fall back to C<$^X>.
 
 =item callbacks
 

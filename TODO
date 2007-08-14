@@ -21,4 +21,5 @@
 - The object returned by ->spawn and used to call methods needs to be
     different from the object used internaly by PoCo::Generic so we stop
     polluting its namespace
-
+- Respawn the child, like EasyDBI does
+- A tutorial about factory methods, etc

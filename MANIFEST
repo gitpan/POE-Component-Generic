@@ -18,6 +18,7 @@ t/08_factory.t
 t/10_simple.t
 t/15_stdout.t
 t/20_alt_fork.t
+t/21_alt_fork-x.t
 t/30_callback.t
 t/40_postback.t
 t/50_factory.t
@@ -29,3 +30,4 @@ t/P30.pm
 t/P40.pm
 t/P4.pm
 t/P50.pm
+t/alt-fork

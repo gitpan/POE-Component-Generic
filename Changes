@@ -1,5 +1,9 @@
 Revision history for POE::Component::Generic.
 
+0.1002 Tue Aug 14 2007
+    - alt_fork can be a path to the perl executable
+        Thank you Matt Sickler for the idea
+
 0.1001 Thu Jun 7 2007
     - refcount_increment on the dest session, not $sender
         Thank you David Snopek
