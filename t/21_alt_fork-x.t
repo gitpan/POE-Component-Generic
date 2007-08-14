@@ -7,7 +7,7 @@ use strict;
 
 sub DEBUG () { 0 }
 
-use Test::More tests => 39;
+use Test::More tests => 3;
 use POE::Component::Generic;
 use POE::Session;
 use POE::Kernel;
@@ -27,12 +27,13 @@ SKIP:
     
     my $delayed;
     my $generic;
+    my $OK = 1;
 
     POE::Session->create(
         inline_states => {
           _start => sub {
               $poe_kernel->alias_set( 'worker' );
-              diag( "$N seconds" );
+              # diag( "This test can take a little while" );
               $generic = POE::Component::Generic->spawn( 
                         alias 		=> 'first-x',
                         package 	=> 't::P10',
@@ -59,7 +60,7 @@ SKIP:
           sub_error => sub {
               my( $kernel, $error ) = @_[ KERNEL, ARG0 ];
               if( $error->{stderr} ) {
-                ok( ($error->{stderr} =~ /# \d+=.+/), "nice output" );
+                $OK = 0 unless $error->{stderr} =~ /# \d+=.+/;
               }
               elsif( ( $error->{errnum} == 32 && $error->{operation} eq 'write' ) 
                      ||
@@ -68,8 +69,9 @@ SKIP:
                 $kernel->yield( 'shutdown' );
               }
               else {
-                use Data::Denter;
-                die "Error: ", Denter $error;
+                
+                die "Error: ", join "\n", map { "$_: $error->{$_}" }
+                                            keys %$error;
               }
           },
 
@@ -86,7 +88,9 @@ SKIP:
 
     $poe_kernel->run();
 
+    ok( $OK, "All output as expected" );
     pass( "Sane exit" );
+    
 }
 
 

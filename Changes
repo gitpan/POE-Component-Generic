@@ -1,5 +1,9 @@
 Revision history for POE::Component::Generic.
 
+0.1003 Tue Aug 14 2007
+    - Don't use Data::Denter !
+    - Don't expect @INC to be a given length !
+
 0.1002 Tue Aug 14 2007
     - alt_fork can be a path to the perl executable
         Thank you Matt Sickler for the idea
