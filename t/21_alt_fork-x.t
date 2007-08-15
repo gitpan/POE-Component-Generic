@@ -24,6 +24,9 @@ SKIP:
     if( $^O eq 'MSWin32' ) {
         skip "alt_fork not supported on MSWin32", 10;
     }
+    unless( -x "/usr/bin/perl" ) {
+        skip "This test uses /usr/bin/perl", 10;
+    }
     
     my $delayed;
     my $generic;
