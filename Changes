@@ -1,5 +1,11 @@
 Revision history for POE::Component::Generic.
 
+0.1005 Wed Aug 15 2007
+    - t/alt-fork uses /bin/sh
+
+0.1004 Wed Aug 15 2007
+    - Make sure we have /usr/bin/perl
+
 0.1003 Tue Aug 14 2007
     - Don't use Data::Denter !
     - Don't expect @INC to be a given length !

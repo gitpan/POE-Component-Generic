@@ -1,7 +1,6 @@
-#!/usr/bin/perl -w
+#!/bin/sh
 
-use strict;
-
-for my $q ( 0 .. $#ARGV ) {
-    print STDERR "# $q=$ARGV[$q]\n";
-}
+while [ "$1" ] ; do
+    echo "# $1" >&2
+    shift
+done

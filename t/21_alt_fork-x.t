@@ -12,7 +12,7 @@ use POE::Component::Generic;
 use POE::Session;
 use POE::Kernel;
 
-my $N = 3;
+my $N = 10;
 if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;
 }
@@ -24,8 +24,8 @@ SKIP:
     if( $^O eq 'MSWin32' ) {
         skip "alt_fork not supported on MSWin32", 10;
     }
-    unless( -x "/usr/bin/perl" ) {
-        skip "This test uses /usr/bin/perl", 10;
+    unless( -x "/bin/sh" ) {
+        skip "This test uses the Bourne shell (/bin/sh)", 10;
     }
     
     my $delayed;
@@ -63,7 +63,10 @@ SKIP:
           sub_error => sub {
               my( $kernel, $error ) = @_[ KERNEL, ARG0 ];
               if( $error->{stderr} ) {
-                $OK = 0 unless $error->{stderr} =~ /# \d+=.+/;
+                  unless( $error->{stderr} =~ /# .+/ ) {
+                      $OK = 0;
+                      diag( $error->{stderr} );
+		  }
               }
               elsif( ( $error->{errnum} == 32 && $error->{operation} eq 'write' ) 
                      ||
