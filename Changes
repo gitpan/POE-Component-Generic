@@ -1,5 +1,9 @@
 Revision history for POE::Component::Generic.
 
+0.1006 Fri Aug 17 2007
+    - Fixed t/21-alt_fork for NetBSD.  
+        Thank you BinGOs
+
 0.1005 Wed Aug 15 2007
     - t/alt-fork uses /bin/sh
 

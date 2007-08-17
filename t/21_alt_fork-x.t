@@ -63,6 +63,11 @@ SKIP:
           sub_error => sub {
               my( $kernel, $error ) = @_[ KERNEL, ARG0 ];
               if( $error->{stderr} ) {
+		  if( $error->{stderr} eq 'LAST' ) {
+		      pass( "Done" );
+		      $kernel->yield( 'shutdown' );
+		      return;
+		  }
                   unless( $error->{stderr} =~ /# .+/ ) {
                       $OK = 0;
                       diag( $error->{stderr} );
@@ -71,7 +76,7 @@ SKIP:
               elsif( ( $error->{errnum} == 32 && $error->{operation} eq 'write' ) 
                      ||
                      ( $error->{errnum} == 104 && $error->{operation} eq 'read' ) ) {
-                pass( "Exited" );
+                diag( "Exited" );
                 $kernel->yield( 'shutdown' );
               }
               else {
