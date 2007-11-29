@@ -24,7 +24,7 @@ my %config = (
         password => '',
     }
 );
-if( $^O =~ /MSWin32/ ) {
+if( $^O =~ /MSWin32/i or $^O =~ /cygwin/ ) {
     warn <<'    WARN';
 ************************************************************
 It has come to our attention that POE::Component::Generic

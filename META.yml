@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                POE-Component-Generic
-version:             0.1007
+version:             0.1008
 abstract:            Generic non-blocking POE interface to any OO-module
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.36

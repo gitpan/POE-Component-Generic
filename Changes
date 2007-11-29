@@ -1,5 +1,8 @@
 Revision history for POE::Component::Generic.
 
+0.1008 Thu Nov 29 2007
+    - t/91_ssh.t wasn't skipping out early if Net::SSH2 wasn't installed
+
 0.1007 Thu Nov 29 2007
     - Fixed POD synopsis of PoCo::Generic::Net::SSH2
     - Fixed PoCo::Generic::Net::SSH2 to work with Net::SSH2 0.18

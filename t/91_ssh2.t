@@ -35,7 +35,8 @@ SKIP: {
     skip "SSH not configured by Makefile.PL", $tests
             unless $conf;
 
-    if( ($Net::SSH2::VERSION||0) < 0.18 ) {
+    if( $Net::SSH2::VERSION and $Net::SSH2::VERSION < 0.18 ) {
+        $conf = 0;
         skip "Need Net::SSH2 version 0.18 or better", $tests;
     }
 
