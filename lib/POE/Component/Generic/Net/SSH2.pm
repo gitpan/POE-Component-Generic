@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm 126 2006-04-13 18:52:05Z fil $
+# $Id: SSH2.pm 309 2007-11-29 13:00:28Z fil $
 
 use strict;
 
@@ -14,6 +14,11 @@ use Net::SSH2;
 $VERSION = '0.06';
 @ISA = qw( POE::Component::Generic );
 $TIMEOUT = 100;
+
+require Net::SSH2;
+if( $Net::SSH2::VERSION < 0.18 ) {
+    croak __PACKAGE__, " requires version Net::SSH2 0.18 or better";
+}
 
 ##########################################################
 #
@@ -34,7 +39,6 @@ sub new
     $params{child_package} ||= join '::', __PACKAGE__, 'Child';
 
     $TIMEOUT = delete $params{timeout} if $params{timeout};
-
 
     $package->SUPER::new( %params );
 }
@@ -61,7 +65,7 @@ package POE::Component::Generic::Net::SSH2::Child;
 use strict;
 
 use IO::Poll qw(POLLRDNORM POLLIN);
-use Scalar::Util qw( reftype );
+use Scalar::Util qw( reftype blessed );
 use vars qw( @ISA );
 
 sub DEBUG () { 0 }
@@ -113,7 +117,11 @@ sub poll_ssh
     }
     return unless @poll;
     DEBUG and warn "ssh_poll";
+    # Blocking has to be off for polling
+    $self->{obj}->blocking( 0 );
     $self->{obj}->poll( $self->{timeout}, [ @poll ] );
+
+    DEBUG and warn "ssh_poll returned ", 0+@poll, " events";
 
     my( $n, $buf );
     foreach my $poll ( @poll ) {
@@ -209,6 +217,19 @@ use strict;
 use vars qw( $CHILD );
 sub DEBUG () { 0 }
 
+*true_channel = \&channel;
+
+#################################
+*channel = sub {
+    my( $self, @args ) = @_;
+    # Blocking has to be on when setting up a channel
+    # And for ->exec and ->cmd, it seems, but ...
+    $self->blocking( 1 );
+    my $obj = true_channel( $self, @args );
+    warn "Can't create channel ".$self->error unless $obj;
+    return $obj;
+};
+
 #################################
 # This method does the heavy-lifting for ->exec
 sub real_exec
@@ -218,7 +239,6 @@ sub real_exec
 
     my $channel = $self->channel;
     unless( $channel ) {
-        warn "Can't create channel";
         $on_error->( $self->error ) if $on_error;
         return
     }
@@ -229,8 +249,13 @@ sub real_exec
     $CHILD->__handler( $channel, 'channel_closed', $on_closed ) if $on_closed;
     # $CHILD->__handler( $channel, 'channel_error', $on_error ) if $on_error;
 
-    DEBUG and warn "Exec $command";
-    return $channel if $channel->exec( $command );
+    DEBUG and 
+        warn "Exec $command";
+    my $ok = $channel->exec( $command );
+
+    if( $ok ) {
+        return $channel; 
+    }
 
     $CHILD->__remove_channel( $channel );
     warn "Couldn't exec $command";
@@ -338,7 +363,7 @@ POE::Component::Generic::Net::SSH2 - A POE component that provides non-blocking 
 
     use POE::Component::Generic::Net::SSH2;
 
-    my $ssh = POE::Component::Generic::Net::SSH2->create( 
+    my $ssh = POE::Component::Generic::Net::SSH2->spawn( 
                     alias   => 'my-ssh',
                     verbose => 1,
                     debug   => 0 );
@@ -399,9 +424,14 @@ POE::Component::Generic::Net::SSH2 - A POE component that provides non-blocking 
                 my( $resp, $ch ) = @_[ARG0..$#_];
                 # keep channel alive
                 $channel = $ch;
-                $channel->write( {}, "CONTENTS OF THE FILE" );
-                $channel->send_eof( {} );
+                $channel->write( {}, "$$-CONTENTS OF THE FILE\n" );
+                $channel->send_eof( {event=>'done'} );
             },
+
+            done => sub {
+                undef( $channel );
+                $ssh->shutdown;
+            }
 
             exec_error => sub {
                 my( $code, $name, $string ) = @_[ARG0..$#_];

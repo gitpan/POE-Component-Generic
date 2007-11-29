@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 227 2007-08-15 20:24:13Z fil $
+# $Id: Generic.pm 309 2007-11-29 13:00:28Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1006';
+$VERSION = '0.1007';
 
 
 ##########################################################################
@@ -28,6 +28,7 @@ sub spawn
 
     if( $^O eq 'MSWin32' and $self->{alt_fork} ) {
         carp "Sorry, alt_fork does not work on MSWin32.";
+        delete $self->{alt_fork};
     }
 
     my $options = $self->{'options'};
@@ -219,7 +220,7 @@ sub _start
         if( $ENV{HARNESS_PERL_SWITCHES} ) {
             $perl .= " $ENV{HARNESS_PERL_SWITCHES}";
         }
-        my $os_quote = ($^O eq 'MSWin32') ? q(") : q(');
+        my $os_quote = ($^O eq 'MSWin32') ? q(") : q('); #"
 
         %prog = (Program =>  "$perl -M".ref( $self )
                   ." -I".join( ' -I', map quotemeta, @INC )
@@ -399,6 +400,7 @@ sub __callback_marshall
         
         my $CBid = "---CALLBACK-$params->{RID}-$pos---";
 
+        ## the callbacks will be GCed when the method returns, in ->response
         $self->{callback_defs}{ $params->{RID} }{ $pos } = {
                   coderef => $args->[$pos]
               };
@@ -773,10 +775,10 @@ sub AUTOLOAD
     my $method = $AUTOLOAD;
     $method =~ s/.*:://;
 
-    croak "$method not an object method" unless blessed $self;    
+    croak "$method not an package method" unless blessed $self;    
     unless( $method =~ /[^A-Z]/ ) {
-        croak qq( Can't locate object method "$method" via package ")
-                .ref( $self ). qq(");
+        croak qq( Can't locate object method "$method" via package ") 
+                .ref( $self ). qq("); #"
     }
 
     my $hash = shift;
@@ -786,7 +788,7 @@ sub AUTOLOAD
 
     unless( $self->{package_map}{ $self->{package} }{ $method } ) {
         croak qq(Can't locate object method "$method" via package ")
-              .ref( $self ). qq(");
+              .ref( $self ). qq("); # "
     }          
     $hash->{wantarray} = wantarray() unless defined $hash->{wantarray};
 
@@ -907,27 +909,29 @@ POE::Component::Generic - A POE component that provides non-blocking access to a
 POE::Component::Generic is a L<POE> component that provides a non-blocking
 wrapper around any object.  It works by forking a child process with
 L<POE::Wheel::Run> and creating the object in the child process.  Method
-calls are then serialised and sent via STDIN to the child to be handled. 
-Return values are posted back to your session via STDOUT. This means that
-all method arguments and return values must survive serialisation.  If you
-need to pass coderefs, use L</callbacks>, L</postbacks> or L</factories>.
+calls on the object are then serialised and sent to the child process to be
+handled by the object there.  The returned value is serialised and sent
+to the parent process, where it is posted as a POE event.
+
+Communication is done via the child's C<STDIN> and C<STDOUT>. This means
+that all method arguments and return values must survive serialisation.  If
+you need to pass coderefs or other data that can't be serialised, use
+L</callbacks>, L</postbacks> or L</factories>.
 
 Method calls are wrapped in C<eval> in the child process so that errors may
 be propagated back to your session.  See L</OUTPUT>.
 
-Output to STDERR in the child, that is from your object, is shown only if
-C<debug> or C<verbose> is set.
-
-STDOUT in the child, that is from your object, is redirected to STDERR and
-will be shown in the same circomstances.
+Output to C<STDERR> in the child, that is from your object, is shown only if
+C<debug> or C<verbose> is set.  C<STDOUT> in the child, that is from your
+object, is redirected to STDERR and will be shown in the same circomstances.
 
 
 =head1 METHODS
 
 =head2 spawn
 
-    my $obj = POE::Component::Generic->new( $package );
-    my $obj = POE::Component::Generic->new( %arguments );
+    my $obj = POE::Component::Generic->spawn( $package );
+    my $obj = POE::Component::Generic->spawn( %arguments );
 
 Create the POE::Component::Generic component.
 
@@ -970,12 +974,21 @@ executable or will silently fall back to C<$^X>.
 
 =item callbacks
 
-List of methods that have callbacks in their parameter list. 
+Callbacks are coderefs that are passed as method parameters.  Because
+coderefs can't be serialised, a little bit of magic needs to happen. When a
+method that has callbacks is called, it's parameters are marshaled in the
+parent process.  The callback coderef is saved in the parent, and replaced
+by markers which the child process converts into thunk coderefs when
+demarshalling. These thunks, when called by the object, will sent a request
+to the parent process, which is translated into a call of the callback
+coderef which the parent saved during marshalling.
 
-A callback is a coderef that the object will only use during that method
-call. After the method returns, the callback will be invalidated.  If you
-need to pass a coderef that must last longer then one method, use
-L</postbacks>.
+Callbacks are only valid during the method's execution. After the method
+returns, the callback will be invalidated.  If you need to pass a coderef
+which is valid for longer then one method call, use L<postbacks>.
+
+The C<callbacks> parameter is a list of methods that have callbacks in their
+parameter list.
 
 When one of the methods in C<callbacks> is called, any coderefs in the
 parameters are converted into a message to the child process to propagate
@@ -1124,13 +1137,15 @@ Example:
 
 =item postbacks
 
-List of methods that have a coderef in there parameters.  These coderefs
-will remain valid after the method returns.  
+Postbacks are like L<callbacks>, but for POE event calls. They will also be
+valid even after the object method returns.  If the object doesn't hold on
+to the coderef longer then one method call, you should use L<callbacks>,
+because postbacks use memory in the parent process.
 
-C<postbacks> must be a hashref, keys are method names, values are lists of
-the offsets of argument that will be converted into postbacks.  These
-offsets maybe be a number, or an array of numeric offsets.  Remember that
-argument offsets are numbered from 0.
+The C<postbacks> value must be a hashref, keys are method names, values are
+lists of the offsets of argument that will be converted into postbacks. 
+These offsets maybe be a number, or an array of numeric offsets.  Remember
+that argument offsets are numbered from 0.
 
 C<postbacks> may also be an array of method names.  In this case, the
 argument offset for each listed method is assumed to be 0.
@@ -1139,31 +1154,42 @@ Examples:
 
     [ qw( new_cert new_connect ) ]
     { new_cert=>0, new_connect=>0 }     # equivalent to previous
-    { double_set=>[0,3] }
+    { double_set=>[0,3] }               # first and fourth param are coderefs
 
-When calling a method that has a postback, you specify an event name in the
-current session, or a hashref containing C<event> and C<session> keys.  If
-C<session> is missing, the current session is used.  Yes, this means you may
-create postbacks that go to other sessions.
+When calling a method that has a postback, the parameter should be an event
+name in the current session, or a hashref containing C<event> and C<session>
+keys.  If C<session> is missing, the current session is used.  Yes, this
+means you may create postbacks that go to other sessions.
 
 Examples:
 
-    "some_back"
-    { event=>"some_back" }
-    { event=>"some_back", session=>"my-session" }
+    $obj->new_cert( "some_back" );
+    $obj->new_cert( { event=>"some_back" } );
+    $obj->new_cert( { event=>"some_back", session=>"my-session" } );
+    $obj->double_set( "postback1", $P1, $P2, 
+                      { event=>"postback1", session=>"other-session" } );
 
-You can use L<POE::Kernel/state> to create postbacks states out of closures.
+Use L<POE::Kernel/state> to convert coderefs into POE states.
 
 Your postback will have the arguments that the object calls it with. 
 Contrary to response events, ARG0 isn't the OUTPUT data hashref.  At least,
 not for now.
 
+    my $coderef = sub { 
+                      my( $arg1, $arg2 ) = @_[ARG0, ARG1];
+                      ....
+                  };
+    $poe_kernel->state( "temp-postback" => $coderef );
+    $obj->new_cert( "temp-postback" );
+
+    # Note that you will probably want to remove the 'temp-postback' state
+    # at some point.
 
 =item verbose
 
 Component tells you more about what is happening in the child process.  The
 child's PID is reported to STDERR.  All text sent to STDERR in the child
-process is report.  Any abnormal error conditions or exits are also
+process is reported.  Any abnormal error conditions or exits are also
 reported.  All this reported via warn.
 
 If you wish to have STDERR delivered to your session, use L</error>.
@@ -1181,7 +1207,7 @@ The child process will of course wait if the object is in a blocking method.
 Note that this is also a POE event, which means you can not call a method
 named 'shutdown' on your object.
 
-Shuting down if there are response pending (see L</OUTPUT> below) is
+Shuting down if there are responses pending (see L</OUTPUT> below) is
 undefined.
 
 Note that L</shutdown> will not cause the kernel to exit if you have other
@@ -1238,6 +1264,10 @@ following arguments are sent as arguments to the resultant call.
 
 L<Call|/call> returns a request ID which may be matched with the response.  
 NOT IMPLEMENTED.
+
+The difference between L<call> and L<yield> is that L<call> by-passes
+POE's event queue and the request is potentially sent faster to the 
+child process.
 
 =head2 psuedo-method
 

@@ -1,5 +1,5 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm 128 2006-05-02 18:44:22Z fil $
+# $Id: Child.pm 309 2007-11-29 13:00:28Z fil $
 
 # This is the object that does all the work in the child process
 
@@ -20,9 +20,8 @@ sub new
     $self->{callback_defs} = {};
     # sub-objects
     $self->{objects} = {};
-    $params{ID} =~ s/[^A-Za-z0-9]+/A/g;
+    $params{ID} =~ s/[^A-Za-z]+/A/g;
     $self->{object_id} = "$params{ID}OBJ000000";
-
     $self->init_handles;
 
     return $self;
@@ -182,13 +181,12 @@ sub request
         if( $req->{wantarray} ) {
             $req->{result} = [ $obj->$method( @$args ) ];
         } 
-        elsif( defined $req->{wantarray} ) {
+        elsif( defined $req->{wantarray} or $req->{factory} ) {
             $req->{result} = [ scalar $obj->$method( @$args ) ];
         }
         else {
             $obj->$method( @$args );
         }
-        # warn "DONE";
     };
 
     if ($@) {
@@ -267,6 +265,11 @@ sub factory_response
     $self->{objects}{ $OBJid } = $req->{result}[0];
     my $package = ref $self->{objects}{ $OBJid };
 
+    Carp::confess "Didn't return an object for $OBJid" unless $req->{result}[0];
+
+    $self->{debug} and 
+        warn "factory_response package=$package $OBJid=$self->{objects}{ $OBJid }";
+
     $req->{result}[0] = {
             package => $package,
             debug   => $self->{debug},
@@ -309,8 +312,7 @@ sub OOB_setup
     $self->{debug} and warn "build object $req->{package}";
     $self->{obj} = object_build( $req->{package}, $req->{args} );
 
-    ($self->{verbose} or
-        $self->{debug} ) and warn "Child PID is $$\n";
+    $self->{debug} and warn "Child PID is $$\n";
 
     $self->{debug} and 
         warn "object=$self->{obj}";

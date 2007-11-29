@@ -1,5 +1,13 @@
 Revision history for POE::Component::Generic.
 
+0.1007 Thu Nov 29 2007
+    - Fixed POD synopsis of PoCo::Generic::Net::SSH2
+    - Fixed PoCo::Generic::Net::SSH2 to work with Net::SSH2 0.18
+    - Fixed error about package methods
+    - Improved explanations in the POD.
+    - Added examples.
+    - Don't allow 0-9 in object ID
+
 0.1006 Fri Aug 17 2007
     - Fixed t/21-alt_fork for NetBSD.  
         Thank you BinGOs

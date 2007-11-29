@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm 129 2006-08-29 21:47:20Z fil $
+# $Id: Object.pm 309 2007-11-29 13:00:28Z fil $
 
 use strict;
 
@@ -61,8 +61,8 @@ sub AUTOLOAD
 
     croak "$method not an object method" unless blessed $self;    
     unless( $method =~ /[^A-Z]/ ) {
-        croak qq( Can't locate object method "$method" via package ")
-                .ref( $self ). qq(");
+        croak qq( Can't locate object method "$method" via package ") 
+                .ref( $self ). qq("); #"
     }
     
     my $hash = shift;
@@ -72,7 +72,7 @@ sub AUTOLOAD
 
     unless( $self->{package_map}{ $method } ) {
         croak qq(Can't locate object method "$method" via package ")
-              .ref( $self ). qq(");
+              .ref( $self ). qq("); #"
     }
     $hash->{wantarray} = wantarray() unless (defined($hash->{wantarray}));
 
@@ -211,7 +211,8 @@ Especially if you do something like:
     die $resp->{error} if $resp->{error};
     $obj = $obj->object_id;        # bang, no more sub-object.
 
-However, it does allow you to control when the object will be reaped.
+However, it does allow you to control when the object will be reaped by the 
+child process.
 
 
 =head1 METHOD CALLS

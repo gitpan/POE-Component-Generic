@@ -35,11 +35,15 @@ SKIP: {
     skip "SSH not configured by Makefile.PL", $tests
             unless $conf;
 
+    if( ($Net::SSH2::VERSION||0) < 0.18 ) {
+        skip "Need Net::SSH2 version 0.18 or better", $tests;
+    }
+
+
     unless( $has_ssh ) {
         $conf = 0;
         skip "Net::SSH2 not installed",  $tests;
     }
-
 
     unless( $conf->{password} ) {
         $conf = 0;
@@ -117,11 +121,11 @@ POE::Session->create(
         ###########
         got_channel => sub {
             my( $resp, $ch ) = @_[ ARG0..$#_ ];
-            ok( !$resp->{error}, "No error" ) or die "Error: $resp->{error}";
+            ok( !$resp->{error}, "No error" ) 
+                    or warn "Error: $resp->{error}";
 
             ok( $ch, "Got a channel" );
             $channel = $ch;
-
             $channel->call( 'cmd', { event=>'output', 
                                      wantarray=>1 }, "ls -l" );
         },
@@ -147,7 +151,6 @@ POE::Session->create(
 
             ok( $ch, "Got a channel" );
             $channel = $ch;
-
             $channel->call( 'cmd', { event=>'output2', 
                                      wantarray=>1 }, "some-error" );
         },
