@@ -1,4 +1,4 @@
-# $Id: P40.pm 198 2007-02-28 18:45:18Z fil $
+# $Id: P40.pm 324 2008-01-24 02:47:59Z fil $
 package t::P40;
 use strict;
 
@@ -36,7 +36,19 @@ sub twothing
     return;
 }
 
+sub holder
+{
+    my( $self, $key, $code ) = @_;
+    $self->{code}{$key} = $code;
+    return;
+}
 
+sub runner
+{
+    my( $self, $key, @args ) = @_;
+    return "Unknown code: $key" unless $self->{code}{$key};
+    return $self->{code}{$key}->( @args );
+}
 
 
 1;

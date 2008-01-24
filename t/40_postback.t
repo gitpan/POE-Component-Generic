@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t 213 2007-06-07 05:47:50Z fil $
+# $Id: 40_postback.t 325 2008-01-24 03:18:51Z fil $
 
 use strict;
 
@@ -7,7 +7,7 @@ use strict;
 
 sub DEBUG () { 0 }
 
-use Test::More tests => 8;
+use Test::More tests => 12;
 
 use POE;
 use POE::Component::Generic;
@@ -26,8 +26,10 @@ my $daemon=0;
 
 my $generic = POE::Component::Generic->spawn( 
           package   => 't::P40',
-          methods   => [ qw( new something otherthing twothing ) ],
-          postbacks => { something=>1, otherthing=>[0] },
+          methods   => [ qw( new something otherthing twothing holder runner ) ],
+          postbacks => { something=>1, otherthing=>[0], 
+                         holder => [ 1 ] 
+                       },
           alt_fork  => $alt_fork,
           verbose   => 1,
           debug     => DEBUG
@@ -35,6 +37,7 @@ my $generic = POE::Component::Generic->spawn(
       
 my $C1 = 0;
 my $C2 = 0;
+my $C3 = -17;
 my $PID = $$;
 
 POE::Session->create(
@@ -82,6 +85,9 @@ POE::Session->create(
                                'some_postback',
                                17,
                              );
+
+            $generic->holder( {}, 'Quiznos', 'Quiznos1' );
+            $generic->holder( {}, 'Subway', 'Subway' );
         },
         something_back => sub {
             my( $res, $answer ) = @_[ ARG0, ARG1 ];
@@ -109,6 +115,30 @@ POE::Session->create(
             is( $answer, 42, "Got 42" );
             diag( "If this doesn't exit, try kill -USR1 $$" ) if $daemon;
             $C2++;
+
+            $generic->runner( { event=>'ignore' }, 'Quiznos' ); 
+        },
+
+        Quiznos1 => sub {
+            pass( "Toasty postback" );
+            $C3 = keys( %{ $generic->{postback_defs} } );
+
+            $generic->runner( { event=>'ignore' }, 'Subway' ); 
+            $generic->holder( {}, 'Quiznos', { event => 'Quiznos2' } );
+        },
+
+        Subway => sub {
+            pass( "Not-toasty postback" );
+
+            $generic->runner( { event=>'ignore' }, 'Quiznos', 
+                                    "Quiznos2" ); 
+        },
+
+        Quiznos2 => sub {
+            pass( "Substitue postback" );
+            is( keys( %{ $generic->{postback_defs} } ), $C3, 
+                            "Still $C3 postbacks" );
+
             $generic->shutdown;
         }, 
 

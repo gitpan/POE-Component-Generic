@@ -1,9 +1,9 @@
 POE::Component::Generic is POE component that provides non-blocking access
 to a blocking object. 
 
-It works by forking of a sub-process with POE::Wheel::Run to do the work
-The object is created in the child process, which waits for method calls 
-from the parent.
+It works by forking of a sub-process with POE::Wheel::Run to do the work The
+blocking object is created in the child process, which waits for method
+calls from the parent.
 
 It is intended for people who want to use an object that blocks from
 POE with as little pain as possible.

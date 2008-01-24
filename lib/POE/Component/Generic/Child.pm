@@ -1,5 +1,5 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm 309 2007-11-29 13:00:28Z fil $
+# $Id: Child.pm 325 2008-01-24 03:18:51Z fil $
 
 # This is the object that does all the work in the child process
 
@@ -243,16 +243,21 @@ sub postback_demarshall
             die "Argument at position $pb->{pos} isn't $pb->{PBid}";
         }
     
+        my $PBid    = $pb->{PBid};
+        my $session = $pb->{session};
+        my $event   = $pb->{event};
+
         $req->{args}[ $pb->{pos} ] = sub {
-            $self->reply( {
-                  response => 'postback',
-                  PBid	   => $pb->{PBid},
-                  result   => [ @_ ]
-              } );
-        };
+                            $self->reply( {
+                                    response => 'postback',
+                                    PBid     => $PBid,
+                                    session  => $session,
+                                    event    => $event,
+                                    result   => [ @_ ]
+                                } );
+                        };
     }
 }
-
 
 ##################################################
 # Modify the response from a factory method

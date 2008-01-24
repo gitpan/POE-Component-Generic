@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 310 2007-11-29 19:44:22Z fil $
+# $Id: Generic.pm 325 2008-01-24 03:18:51Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1008';
+$VERSION = '0.1100';
 
 
 ##########################################################################
@@ -474,14 +474,12 @@ sub __postback_marshall
     my @postbacks;
     foreach my $pos ( @{ $pmap->{pos} } ) {
         
-        my $PBid = "---POSTBACK-$params->{package}-$pmap->{method}-$pos---";
+        my $PBid = "---POSTBACK-$params->{package}-$pmap->{method}-$pos-$params->{RID}---";
 
-        ## Postback_defs gets GC'ed when another call with the same PBid 
-        ## is done.
-        $self->{postback_defs}{ $PBid } = 
-              $self->__postback_def( $args->[$pos], $sender, $PBid );
+        push @postbacks, $self->__postback_def( $args->[$pos], $sender, $params->{RID} );
+        $postbacks[-1]->{pos} = $pos;
+        $postbacks[-1]->{PBid} = $PBid;
 
-        push @postbacks, { PBid=>$PBid, pos=>$pos };
         $args->[$pos] = $PBid;
     }
     return unless @postbacks;
@@ -493,7 +491,7 @@ sub __postback_marshall
 sub __postback_def
 {
     my( $self, $arg, $sender, $RID ) = @_;
- 
+
     unless( ref $arg ) {                # simply an event name
         return { event=>$arg, session=>$sender };
     }
@@ -673,13 +671,12 @@ sub OOB_response
     }
     elsif( $input->{response} eq 'postback' ) {
         my $PBid  = $input->{PBid};
-        my $PB  = $self->{postback_defs}{ $PBid };
         
-        unless( $PB ) {
-            warn "Postback to undefined $PBid";
+        unless( $input->{session} and $input->{event} ) {
+            warn "Bad postback $PBid.  Missing {session} or {event}";
             return;
         }
-        $poe_kernel->post( $PB->{session} => $PB->{event}, @$res );
+        $poe_kernel->post( $input->{session} => $input->{event}, @$res );
     }
     else {
         warn "Unknown OOB child response $input->{response}";

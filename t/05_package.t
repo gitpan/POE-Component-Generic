@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 05_package.t 117 2006-04-12 08:13:22Z fil $
+# $Id: 05_package.t 325 2008-01-24 03:18:51Z fil $
 
 use strict;
 
@@ -32,7 +32,6 @@ is_deeply( $generic->{package_map}, {P1=>{ qw(
         in22f P22
         in2f P2
         in1f P1 ) }}, "Got the package map right");
-            # or die "package_map=", Denter $generic->{package_map};
 
 
 ######### Test object_build
@@ -47,7 +46,6 @@ is_deeply( $generic->{package_map}, {P1=>{ qw(
         new P2
         in3f P3
         in1f P1 ) }}, "Got the package map right using {methods}");
-            # or die "method_map=", Denter $generic->{method_map};
 
 
 

@@ -1,5 +1,11 @@
 Revision history for POE::Component::Generic.
 
+0.1100 Wed Jan 23 2008
+    - Did away with mapping PBids to session/event tupples.  This allows
+        us to completely ignore postback GC issues, at the cost of slightly
+        modifying postback semantics.  Win!
+        Closes RT 32067, thank you Paul Driver.
+
 0.1008 Thu Nov 29 2007
     - t/91_ssh.t wasn't skipping out early if Net::SSH2 wasn't installed
 

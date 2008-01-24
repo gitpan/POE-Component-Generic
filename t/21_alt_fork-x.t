@@ -22,10 +22,10 @@ SKIP:
 {
 
     if( $^O eq 'MSWin32' ) {
-        skip "alt_fork not supported on MSWin32", 10;
+        skip "alt_fork not supported on MSWin32", 3;
     }
     unless( -x "/bin/sh" ) {
-        skip "This test uses the Bourne shell (/bin/sh)", 10;
+        skip "This test uses the Bourne shell (/bin/sh)", 3;
     }
     
     my $delayed;
