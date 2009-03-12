@@ -1,11 +1,11 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm 325 2008-01-24 03:18:51Z fil $
+# $Id: Child.pm 341 2009-03-12 00:50:34Z fil $
 
 # This is the object that does all the work in the child process
 
 use strict;
 use Symbol;
-
+use Carp;
 
 ##################################################
 # Called from Generic::process_requests
@@ -86,6 +86,7 @@ sub loop
         }
         $self->status( 'read' );
     }
+    $self->status( 'exit' );
 }
 
 ##################################################
@@ -108,9 +109,9 @@ sub get_requests
 sub status
 {
     my $self = shift;
+    $self->{debug} and warn join ' ', @_, "\n";
     $0 = join ' ', $self->{proc}, $self->{name}, @_;
-    
-    $self->{debug} and warn join ' ', @_;
+    return;    
 }
 
 ##################################################
@@ -118,7 +119,7 @@ sub status
 sub reply
 {
     my( $self, $resp ) = @_;
-    $self->{debug} and warn "reply";
+    $self->status( 'reply' );
     # use Data::Denter;
     # warn "reply=", Denter $resp;
     my $replies = $self->{filter}->put( [ $resp ] );
@@ -409,7 +410,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE%3A%3AComponent%3A%3AGeneric
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Philip Gwyn;
+Copyright 2006-2008 by Philip Gwyn;
 
 Copyright 2005 by David Davis and Teknikill Software.
 

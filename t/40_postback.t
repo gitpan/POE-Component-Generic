@@ -1,13 +1,14 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t 325 2008-01-24 03:18:51Z fil $
+# $Id: 40_postback.t 341 2009-03-12 00:50:34Z fil $
 
 use strict;
 
 # sub POE::Kernel::TRACE_REFCNT () { 1 }
+# sub POE::Kernel::TRACE_SIGNALS () { 1 }
 
 sub DEBUG () { 0 }
 
-use Test::More tests => 12;
+use Test::More tests => 14;
 
 use POE;
 use POE::Component::Generic;
@@ -60,6 +61,8 @@ POE::Session->create(
 
 
 );
+
+my $session_id;
 
 POE::Session->create(
     inline_states => {
@@ -140,8 +143,19 @@ POE::Session->create(
                             "Still $C3 postbacks" );
 
             $generic->shutdown;
-        }, 
+            # Test that the Generic session has _stoped
+            $session_id = $generic->session_id;
+            diag( "$N seconds" );
+            $poe_kernel->delay( Done => $N );
+        },
 
+        Done => sub {
+            ok( $session_id, "We expect to exit" );
+            my $ses = eval {
+                        $poe_kernel->ID_id_to_session( $session_id );
+                    };
+            is( $ses, undef(), "Generic session is gone" );
+        }
     }     
 );
 

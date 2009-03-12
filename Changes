@@ -1,5 +1,17 @@
 Revision history for POE::Component::Generic.
 
+0.1200 Wed Mar 11 2009
+    - Better handling of shutdown, delete wheel on CHLD.  Now the session
+      may _stop, even if the kernel keeps on.
+        Thank you Paul Williams.  Closes RT 44039
+    - Unit tests for above
+    - Create a smaller closure to run the child process
+    - Tweak debug messages
+    - Tweak doco intro
+
+0.1101 Thu Sep 04 2008 
+    - Internal release
+
 0.1100 Wed Jan 23 2008
     - Did away with mapping PBids to session/event tupples.  This allows
         us to completely ignore postback GC issues, at the cost of slightly

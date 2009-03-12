@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm 309 2007-11-29 13:00:28Z fil $
+# $Id: Object.pm 326 2008-09-04 21:56:06Z fil $
 
 use strict;
 
@@ -290,7 +290,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE%3A%3AComponent%3A%3AGeneric
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Philip Gwyn;
+Copyright 2006-2008 by Philip Gwyn;
 
 Copyright 2005 by David Davis and Teknikill Software.
 
@@ -298,23 +298,4 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-$Log$
-Revision 1.5  2006/08/29 21:47:20  fil
-Doco touch-up
-
-Revision 1.4  2006/04/13 18:52:05  fil
-New vs spawn in the examples
-Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer
-        doesn't complain
-PoCo::Generic::Net::SSH2 now works with alt_fork=>1
-
-Revision 1.3  2006/04/12 08:13:22  fil
-Added documentation
-Added __callback_argument and __postback_arguement
-Use Scalar::Util::reftype instead of ref()
-Added __package_register
-Added PoCo::Generic::Net::SSH2->exec and ->cmd
-Fixed PoCo::Generic::Object->DESTROY
-Added test cases to improve test coverage
 

@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 325 2008-01-24 03:18:51Z fil $
+# $Id: Generic.pm 342 2009-03-12 00:52:18Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1100';
+$VERSION = '0.1200';
 
 
 ##########################################################################
@@ -39,9 +39,10 @@ sub spawn
                             map { $_ => '__request1' }
                               keys %{$self->{package_map}{ $self->{package} }}
                          },
-                $self => [ qw(_start shutdown _child __request2
+                $self => [ qw(_start _stop shutdown _child __request2
                               __wheel_close __wheel_err 
-                              __wheel_out __wheel_stderr) 
+                              __wheel_out __wheel_stderr
+                             ) 
                          ],
             ],
             ( ( defined ( $options ) and ref ( $options ) eq 'HASH' ) ? 
@@ -49,7 +50,7 @@ sub spawn
         )->ID();
 
     $self->{debug} 
-        and warn "session $self->{session_id} created for $self->{package}";
+        and warn "$self->{name}: session $self->{session_id} created for $self->{package}";
     
     return $self;
 }
@@ -163,14 +164,22 @@ sub __package_map
 ##################################################
 sub __method_map
 {
-    my( $package, $method ) = @_;
+    my( $P, $method ) = @_;
     ($method =~ m/^(.+)\:\:([^\:]+)/);
     my $pk = $1;
     my $sub = $2;
 
-    return unless $sub =~ /[a-z]$/;
-    return if $sub =~ m/^_/ || $sub =~ m/(carp|croak|confess)$/;
+    return unless $P->__is_method_name( $pk, $sub );
     return ( $pk, $sub );
+}
+
+sub __is_method_name
+{
+    my( $P, $pk, $sub ) = @_;
+    return unless $sub =~ /[^A-Z]$/;        # I18N detection of CONSTANTS
+    return if $sub =~ m/^_/ or              # private and/or protected method
+              $sub =~ m/(carp|croak|confess|cluck)$/;   # very common subs
+    return 1;
 }
 
 ##################################################
@@ -201,18 +210,18 @@ sub _start
     if ( $self->{alias} ) {
         $self->{name} = $self->{alias};
         $kernel->alias_set( $self->{alias} );
-        $self->{debug} and warn "alias is $self->{alias}";
+        $self->{debug} and warn "$self->{name}:  alias is $self->{alias}";
     } 
     else {
         $self->{name} = "poe-generic";
-        $kernel->refcount_increment( $self->{session_id} => __PACKAGE__ );
+        $kernel->refcount_increment( $self->session_id() => __PACKAGE__ );
     }
+
+    $self->{referenced} = 1;
     
     my $child_p = $self->{child_package} || 'POE::Component::Generic::Child';
-    my %prog = ( Program => sub{ 
-                                  process_requests( $child_p, $self->{name} )
-                               } 
-               );
+    my %prog = ( Program => $self->__subref( $child_p, $self->{name} ) );
+
     if ($self->{alt_fork}) {
     
         my $perl = $^X;
@@ -226,7 +235,7 @@ sub _start
                   ." -I".join( ' -I', map quotemeta, @INC )
                   ." -e $os_quote".__PACKAGE__."::process_requests(qq(\Q$child_p\E),qq(\Q$self->{name}\E), 1)$os_quote");
         $self->{debug} and 
-            warn "Launching $prog{Program}";
+            warn "$self->{name}: Launching $prog{Program}";
     }
     
     $self->{wheel} = POE::Wheel::Run->new(
@@ -245,7 +254,9 @@ sub _start
     if( $poe_kernel->can( 'sig_child' ) ) {
         my $pid = $self->{wheel}->PID;
         my $state = ref( $self )."--child--".$pid;
-        $poe_kernel->state( $state, sub { $poe_kernel->sig_handled(); } );
+        # NB we don't ever remove this state, but a- it won't be enough to
+        # keep the session alive, and b- only one state is created ever anyway
+        $poe_kernel->state( $state, $self, '_child' );
         $poe_kernel->sig_child( $pid, $state );
     }
     else {
@@ -268,11 +279,56 @@ sub _start
               };
     $new->{size} = $self->{size} if $self->{size};
               
-    $self->{debug} and warn "Ask to create object";
+    $self->{debug} and warn "$self->{name}: Ask to create object";
     $self->{wheel}->put( $new );
 
     undef;
 }
+
+# Build the smallest closure possible
+sub __subref
+{
+    my( $child_p, $name ) = @_[1,2];
+    return sub { process_requests( $child_p, $name ) };
+}
+
+sub _stop
+{
+    my( $self ) = @_[OBJECT, ARG0];
+    $self->{debug} and 
+        warn "$self->{name}: _stop";
+}
+
+######################################################
+# Clean up everything
+sub _done
+{
+    my( $self ) = @_;
+
+    $self->{debug} and warn "$self->{name}: _done";
+    $poe_kernel->sig( 'CHLD' );
+    $self->{child_PID} = 0;
+
+    # remove the wheel
+    if ($self->{wheel}) {
+        $self->{wheel}->shutdown_stdin;
+        delete $self->{wheel};
+    }
+
+    # remove alias or decrease ref count
+    if( $self->{referenced} ) {
+        if ( $self->{alias} ) {
+            foreach my $alias ( $poe_kernel->alias_list() ) {
+                $self->{debug} and warn "$self->{name}: remove alias $alias";
+                $poe_kernel->alias_remove( $alias );
+            }
+        } else {
+            $poe_kernel->refcount_decrement($self->session_id() => __PACKAGE__);
+        }
+        $self->{referenced} = 0;
+    }
+}
+
 
 ######################################################
 # POE request to the parent object
@@ -297,7 +353,7 @@ sub __request
 {
     my ( $self, $sender, $method, $hash, @args ) = @_;
   
-    warn "$$: processing request $method\n" if ($self->{debug});
+    warn "$self->{name}: $$: processing request $method\n" if ($self->{debug});
     
     # Get the arguments
     if (ref( $hash ) eq 'HASH') {
@@ -309,7 +365,7 @@ sub __request
     }
  
     unless ($self->{wheel}) {
-        warn "No wheel";
+        warn "$self->{name}: No wheel";
         return;
     }
        
@@ -346,7 +402,7 @@ sub __request
     }
 
     # if we have an event to report to...make sure it stays around
-    if ($hash->{event}) {
+    if ( $hash->{event} ) {
         $poe_kernel->refcount_increment( $hash->{session} => $self->{name} );
         # TODO : Above will explode if $hash->{session} isn't an extant
         # session.  This is OK, but the error message will point here, not
@@ -360,7 +416,7 @@ sub __request
         $self->__postback_marshall( $params, $sender );
     }
 
-    $self->{debug} and warn "request put";
+    $self->{debug} and warn "$self->{name}: request put";
     $self->{wheel}->put( $params );
     
     return;
@@ -582,7 +638,7 @@ sub __wheel_out
     my ($self,$input) = @_[ OBJECT,ARG0 ];
 
     $self->{debug} and 
-        warn "__wheel_out";
+        warn "$self->{name}: __wheel_out";
 
     $input->{result} ||= [];
 
@@ -598,7 +654,7 @@ sub __wheel_out
 sub __wheel_stderr {
     my ($kernel,$self,$input) = @_[KERNEL,OBJECT,ARG0];
 
-    warn "ERR:$self->{name}: $input\n" 
+    warn "$self->{name}:ERR: $input\n" 
                 if $self->{debug} or $self->{verbose};
 
     if( $self->{error} ) {
@@ -611,7 +667,7 @@ sub __wheel_stderr {
 sub __wheel_err {
     my ($self, $operation, $errnum, $errstr, $wheel_id) = @_[OBJECT, ARG0..ARG3];
     
-    warn "Wheel:$self->{name}: Wheel $wheel_id generated $operation error $errnum: $errstr\n" 
+    warn "$self->{name}: Wheel $wheel_id generated $operation error $errnum: $errstr\n" 
             if $self->{debug} or
             ( $self->{verbose} and $errnum != 0 );
     if( $errnum!=0 and $self->{error} ) {
@@ -626,20 +682,22 @@ sub __wheel_err {
 sub __wheel_close {
     my $self = $_[OBJECT];
     
-    warn "Wheel closed\n" if ($self->{debug});
+    warn "$self->{name}: Wheel closed\n" if ($self->{debug});
     
-#   warn "$self->{package} Wheel closed, ieeeeeeee!\n";
+    # We should see a CHLD soon
+#   warn "$self->{name}: $self->{package} Wheel closed, ieeeeeeee!\n";
 }
 
 sub _child
 {
     my( $self, $name, $PID, $ret ) = @_[ OBJECT, ARG0..ARG2 ];
     unless( $PID == $self->{child_PID} ) {
-        $self->{debug} and warn "Got CHLD for $PID";
+        $self->{debug} and warn "$self->{name}: Got CHLD for $PID";
         return;
     }
-    $self->{debug} and warn "Child $PID exited with $ret";
+    $self->{debug} and warn "$self->{name}: Child $PID exited with $ret";
     $poe_kernel->sig_handled;
+    $self->_done;
     return;
 }
 
@@ -655,7 +713,7 @@ sub OOB_response
 
     if( $input->{response} eq 'new' ) {
         $self->{child_PID} = $input->{PID};
-        $self->{debug} and warn "Child PID=$input->{PID}";
+        $self->{debug} and warn "$self->{name}: Child PID=$input->{PID}";
     }
     elsif( $input->{response} eq 'callback' ) {
         my $RID  = $input->{RID};
@@ -663,23 +721,23 @@ sub OOB_response
         my $CB  = $self->{callback_defs}{ $RID }{ $pos };
         
         unless( $CB ) {
-            warn "Callback to undefined $RID\[$input->{pos}]";
+            warn "$self->{name}: Callback to undefined $RID\[$input->{pos}]";
             return;
         }
         eval { $CB->{coderef}->( @$res ) };
-        warn "Error in callback: $@" if $@;
+        warn "$self->{name}: Error in callback: $@" if $@;
     }
     elsif( $input->{response} eq 'postback' ) {
         my $PBid  = $input->{PBid};
         
         unless( $input->{session} and $input->{event} ) {
-            warn "Bad postback $PBid.  Missing {session} or {event}";
+            warn "$self->{name}: Bad postback $PBid.  Missing {session} or {event}";
             return;
         }
         $poe_kernel->post( $input->{session} => $input->{event}, @$res );
     }
     else {
-        warn "Unknown OOB child response $input->{response}";
+        warn "$self->{name}: Unknown OOB child response $input->{response}";
     }
 }
 
@@ -708,7 +766,7 @@ sub response
     my $event = delete $input->{event};
 
     if ($event) {
-        $self->{debug} and warn "Reply to $session/$event";
+        $self->{debug} and warn "$self->{name}: ($$) Reply to $session/$event";
         $poe_kernel->post( $session => $event, $input, @{$input->{result}} );
         $poe_kernel->refcount_decrement( $session => $self->{name} );
     }
@@ -730,15 +788,16 @@ sub shutdown {
     
     my ($kernel,$self) = @_[KERNEL,OBJECT];
 
-    # remove alias or decrease ref count
-    if ($self->{alias}) {
-        $kernel->alias_remove($_) for $kernel->alias_list();
-    } else {
-        $kernel->refcount_decrement($self->session_id() => __PACKAGE__);
-    }
-    
+
+    $self->{debug} and warn "$self->{name}: shutdown";
+    # if we still have a wheel, tell it to close
     if ($self->{wheel}) {
         $self->{wheel}->shutdown_stdin;
+        # this provokes CHLD, which will call ->_done
+    }
+    else {
+        # no wheel; clean up now
+        $self->_done;
     }
     undef;
 }
@@ -761,6 +820,8 @@ sub call {
 }
 
 sub DESTROY {
+    $_[0]->{debug} and 
+        warn "$_[0]->{name}: DESTROY";
     if (UNIVERSAL::isa($_[0],__PACKAGE__)) {
         $_[0]->shutdown();
     }
@@ -769,27 +830,38 @@ sub DESTROY {
 sub AUTOLOAD 
 {
     my $self = shift;
+
     my $method = $AUTOLOAD;
     $method =~ s/.*:://;
 
-    croak "$method not an package method" unless blessed $self;    
-    unless( $method =~ /[^A-Z]/ ) {
-        croak qq( Can't locate object method "$method" via package ") 
+    my $hash;
+
+    my $bad = '';
+    unless( UNIVERSAL::isa( $self, __PACKAGE__ ) ) {
+        $bad = 'object';
+    }
+    elsif( not blessed $self ) {
+        $bad = 'package';
+    }
+    else {
+        $hash = shift;
+        unless( ref($hash) eq 'HASH' ) {
+            croak "First argument to $method must be a hashref";
+        }
+
+        unless( $self->{package_map}{ $self->{package} }{ $method } ) {
+            $bad = 'object';
+        }
+    }          
+
+    if( $bad ) {
+        croak qq( Can't locate $bad method "$method" via package ") 
                 .ref( $self ). qq("); #"
     }
 
-    my $hash = shift;
-    unless( ref($hash) eq 'HASH' ) {
-        croak "First argument to $method must be a hashref";
-    }
-
-    unless( $self->{package_map}{ $self->{package} }{ $method } ) {
-        croak qq(Can't locate object method "$method" via package ")
-              .ref( $self ). qq("); # "
-    }          
     $hash->{wantarray} = wantarray() unless defined $hash->{wantarray};
 
-    warn "autoload method $method" if ($self->{debug});
+    warn "$self->{name}: autoload method $method" if ($self->{debug});
     
     # use ->call() so that they happen in order
     $poe_kernel->call( $self->session_id() => $method => $hash => @_ );
@@ -904,22 +976,32 @@ POE::Component::Generic - A POE component that provides non-blocking access to a
 =head1 DESCRIPTION
 
 POE::Component::Generic is a L<POE> component that provides a non-blocking
-wrapper around any object.  It works by forking a child process with
-L<POE::Wheel::Run> and creating the object in the child process.  Method
-calls on the object are then serialised and sent to the child process to be
-handled by the object there.  The returned value is serialised and sent
-to the parent process, where it is posted as a POE event.
+wrapper around any object.  This allows you to build a POE component from
+existing code with minimal effort.
+
+The following documentation is a tad opaque and complicated.  This is
+unavoidable; the problem POE::Component::Generic solves is complicated.
+
+POE::Component::Generic works by forking a child process with
+L<POE::Wheel::Run> and creating the blocking object in the child process. 
+Method calls on the object are then serialised and sent to the child process
+to be handled by the object there.  The returned value is serialised and
+sent to the parent process, where it is posted back to the caller as a POE
+event.
 
 Communication is done via the child's C<STDIN> and C<STDOUT>. This means
 that all method arguments and return values must survive serialisation.  If
 you need to pass coderefs or other data that can't be serialised, use
-L</callbacks>, L</postbacks> or L</factories>.
+L</callbacks> or L</postbacks>.
+
+If you want to have multiple objects within a single child process, you will
+have to create L</factories> that create the objects.
 
 Method calls are wrapped in C<eval> in the child process so that errors may
 be propagated back to your session.  See L</OUTPUT>.
 
 Output to C<STDERR> in the child, that is from your object, is shown only if
-C<debug> or C<verbose> is set.  C<STDOUT> in the child, that is from your
+L</debug> or L</verbose> is set.  C<STDOUT> in the child, that is from your
 object, is redirected to STDERR and will be shown in the same circomstances.
 
 
@@ -1201,13 +1283,17 @@ Shut the component down, doing all the magic so that POE may exit.  The
 child process will exit, causing C<DESTROY> to be called on your object. 
 The child process will of course wait if the object is in a blocking method.
 
-Note that this is also a POE event, which means you can not call a method
-named 'shutdown' on your object.
+It is assumed that your object won't prevent the child from exiting. If you
+want your object to live longer (say for some long-running activity) please
+fork off a grand-child.
+
+Shutdown that this is also a POE event, which means you can not call a
+method named 'shutdown' on your object.
 
 Shuting down if there are responses pending (see L</OUTPUT> below) is
 undefined.
 
-Note that L</shutdown> will not cause the kernel to exit if you have other
+Calling L</shutdown> will not cause the kernel to exit if you have other
 components or sessions keeping POE from doing so.
 
 
@@ -1365,6 +1451,26 @@ is, they look like:
 
 
 
+=head1 SUB-CLASSING
+
+It might be desirable to overload the following methods in a sub-class of 
+POE::Component::Generic.
+
+=head2 __is_method_name
+
+    sub __is_method_name {
+        my( $package, $pk, $sub ) = @_;
+        # ...
+    }
+
+Must return true if C<$sub> is a valid object method of C<$pk>.  Must return
+false otherwise.
+
+Method names are verified when a package specified with L</spawn>'s
+L</packages> argument is scanned for methods.  The default implementation
+tries to reject constants (C<$sub> ending in non-uppercase), private methods
+(C<$sub> begining with C<_>) and common subroutines (ie, L<Carp>).
+
 
 
 
@@ -1434,8 +1540,6 @@ session and returns a call to that.  NOT YET IMPLEMENTED.
 Returns C<undef()> otherwise.
 
 
-
-
 =head1 STATUS
 
 For your comfort and conveinence, the child process updates C<$O> to
@@ -1472,7 +1576,7 @@ based.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Philip Gwyn;
+Copyright 2006-2009 by Philip Gwyn;
 
 Copyright 2005 by David Davis and Teknikill Software.
 
