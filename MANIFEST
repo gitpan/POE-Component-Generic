@@ -11,7 +11,9 @@ example/demo.pl
 example/postback.pl
 META.yml                                 Module meta-data (added by MakeMaker)
 t/00_compile.t
-t/01_object.t
+t/01_pod.t
+t/02_pod_coverage.t
+t/04_object.t
 t/05_package.t
 t/07_callback.t
 t/08_factory.t

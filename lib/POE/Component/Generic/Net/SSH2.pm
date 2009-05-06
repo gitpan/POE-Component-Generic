@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm 309 2007-11-29 13:00:28Z fil $
+# $Id: SSH2.pm 478 2009-05-06 18:19:09Z fil $
 
 use strict;
 
@@ -9,9 +9,10 @@ use POE::Component::Generic::Child;
 use Carp qw(carp croak);
 use vars qw( @ISA $TIMEOUT $VERSION );
 
-use Net::SSH2;
+use         # hide from CPANTS
+    Net::SSH2;
 
-$VERSION = '0.06';
+$VERSION = '0.1201';
 @ISA = qw( POE::Component::Generic );
 $TIMEOUT = 100;
 

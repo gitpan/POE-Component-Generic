@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
-# $Id: 05_package.t 325 2008-01-24 03:18:51Z fil $
+# $Id: 05_package.t 478 2009-05-06 18:19:09Z fil $
 
 use strict;
 
 use Test::More tests => 7;
+use POE;
 use POE::Component::Generic;
 use Symbol ();
-
 
 my $generic1 = POE::Component::Generic->new( package=>'P1' );
 my $generic = POE::Component::Generic->new( 'P1' );

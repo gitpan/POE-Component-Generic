@@ -1,5 +1,5 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm 341 2009-03-12 00:50:34Z fil $
+# $Id: Child.pm 478 2009-05-06 18:19:09Z fil $
 
 # This is the object that does all the work in the child process
 
@@ -177,8 +177,14 @@ sub request
     my $args = delete $req->{args};
 
     eval {
-        $self->{debug} and 
-            warn "Calling $method on $obj"; 
+        $self->{debug} and do {
+                if( $req->{factory} ) {
+                    warn "Calling factory $method on $obj"; 
+                }
+                else {
+                    warn "Calling $method on $obj"; 
+                }
+            };
         if( $req->{wantarray} ) {
             $req->{result} = [ $obj->$method( @$args ) ];
         } 

@@ -1,5 +1,11 @@
 Revision history for POE::Component::Generic.
 
+0.1201 Wed May 06 2009
+    - Fix a bunch of warnings that were previously hidden by POE turning off
+        warnings.
+        - Thank you Hinrik
+    - Added 01_pod and 02_pod_coverage
+
 0.1200 Wed Mar 11 2009
     - Better handling of shutdown, delete wheel on CHLD.  Now the session
       may _stop, even if the kernel keeps on.

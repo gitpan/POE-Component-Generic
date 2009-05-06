@@ -30,7 +30,7 @@ SKIP: {
     skip "SSH not configured by Makefile.PL", $tests
             unless $conf;
 
-    if( $ENV{HARNESS_PERL_SWITCHES} =~ /Devel::Cover/) {
+    if( ($ENV{HARNESS_PERL_SWITCHES}||'') =~ /Devel::Cover/) {
         $conf = 0;
         skip "Test to slow with Devel::Cover", $tests
     }

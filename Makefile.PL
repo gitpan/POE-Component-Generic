@@ -90,6 +90,7 @@ WriteMakefile(
 	AUTHOR        => 'Philip Gwyn <gwyn@cpan.org>',
 	ABSTRACT      => 'Generic non-blocking POE interface to any OO-module',
 	VERSION_FROM  => 'lib/POE/Component/Generic.pm', # finds $VERSION
+    LICENSE       => 'perl',
 	PREREQ_PM     => {
 		'Test::More'        => 0.32,
 		'POE'               => 0.31,

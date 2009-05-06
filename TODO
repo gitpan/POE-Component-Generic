@@ -1,5 +1,8 @@
 *TODO*
 
+- A tutorial!  POE::Component::Generic is hard!
+- A generalised factory class, in case a constructor requires coderefs
+
 - Better contexts for error messages [caller]
 - ->call, ->yield and ->method should return the request/response ID so
     that it can be corrolated with the response.

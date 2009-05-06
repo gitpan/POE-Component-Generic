@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 342 2009-03-12 00:52:18Z fil $
+# $Id: Generic.pm 478 2009-05-06 18:19:09Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1200';
+$VERSION = '0.1201';
 
 
 ##########################################################################
@@ -452,7 +452,7 @@ sub __callback_marshall
     my $args = $params->{args};
     my @callbacks;
     for( my $pos=0; $pos <= $#$args; $pos++ ) {
-        next unless 'CODE' eq reftype $args->[$pos];
+        next unless 'CODE' eq (reftype( $args->[$pos] ) ||'');
         
         my $CBid = "---CALLBACK-$params->{RID}-$pos---";
 
@@ -623,7 +623,8 @@ sub __factory_response
     $input->{result} = [ POE::Component::Generic::Object->new( 
                             $obj_def, 
                             $self->session_id,
-                            $self->{package_map}{ $obj_def->{package} } ) ];
+                            $self->{package_map}{ $obj_def->{package}||'' } ) 
+                       ];
 
     return;
 }
@@ -691,7 +692,7 @@ sub __wheel_close {
 sub _child
 {
     my( $self, $name, $PID, $ret ) = @_[ OBJECT, ARG0..ARG2 ];
-    unless( $PID == $self->{child_PID} ) {
+    unless( $PID == ($self->{child_PID}||0) ) {
         $self->{debug} and warn "$self->{name}: Got CHLD for $PID";
         return;
     }
@@ -780,8 +781,9 @@ sub response
 
 sub shutdown {
     unless (UNIVERSAL::isa($_[KERNEL],'POE::Kernel')) {
-        if ($poe_kernel) {
-            $poe_kernel->call(shift->session_id() => 'shutdown' => @_);
+        my $self = shift;
+        if ($poe_kernel and $self->session_id) {
+            $poe_kernel->call($self->session_id() => 'shutdown' => @_);
         }
         return;
     }

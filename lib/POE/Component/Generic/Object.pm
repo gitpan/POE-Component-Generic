@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm 326 2008-09-04 21:56:06Z fil $
+# $Id: Object.pm 478 2009-05-06 18:19:09Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw($AUTOLOAD);
 
 use strict;
 
-our $VERSION = '0.05';
+our $VERSION = '0.1201';
 
 ##################################################
 # Create the object
@@ -118,14 +118,14 @@ sub object_id
 sub yield 
 {
     my $self = shift;
-    if( 'HASH' eq reftype @_[2] ) { croak "Second argument must be a hashref" }
+    if( 'HASH' eq (reftype( $_[2] )||'') ) { croak "Second argument must be a hashref" }
     return $self->__request( @_ );
 }
 
 sub call 
 {
     my $self = shift;
-    if( 'HASH' eq reftype @_[2] ) { croak "Second argument must be a hashref" }
+    if( 'HASH' eq (reftype( $_[2] )||'') ) { croak "Second argument must be a hashref" }
     return $self->__request( @_);
 }
 
