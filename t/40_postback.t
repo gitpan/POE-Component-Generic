@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t 341 2009-03-12 00:50:34Z fil $
+# $Id: 40_postback.t 504 2009-06-30 20:18:49Z fil $
 
 use strict;
 
@@ -13,7 +13,7 @@ use Test::More tests => 14;
 use POE;
 use POE::Component::Generic;
 
-my $N = 1;
+my $N = 2;
 my $alt_fork = 1;
 if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;

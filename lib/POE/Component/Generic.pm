@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 478 2009-05-06 18:19:09Z fil $
+# $Id: Generic.pm 536 2009-09-11 16:17:36Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1201';
+$VERSION = '0.1202';
 
 
 ##########################################################################
@@ -81,6 +81,8 @@ sub new
     $params{RID} = "REQ000000";
 
     my $self = bless(\%params, $package);
+
+    $self->{child_PID} = 0;
 
     if( $self->{error} ) {
         my $rt = reftype $self->{error};
@@ -251,18 +253,13 @@ sub _start
     );
 
     #########
-    if( $poe_kernel->can( 'sig_child' ) ) {
-        my $pid = $self->{wheel}->PID;
-        my $state = ref( $self )."--child--".$pid;
-        # NB we don't ever remove this state, but a- it won't be enough to
-        # keep the session alive, and b- only one state is created ever anyway
-        $poe_kernel->state( $state, $self, '_child' );
-        $poe_kernel->sig_child( $pid, $state );
-    }
-    else {
-        $poe_kernel->sig( CHLD => '_child' );
-    }
-
+    my $pid = $self->{wheel}->PID;
+    my $state = ref( $self )."--child--".$pid;
+    # NB we don't ever remove this state, but a- it won't be enough to
+    # keep the session alive, and b- only one state is created ever anyway
+    $poe_kernel->state( $state, $self, '_child' );
+    $poe_kernel->sig_child( $pid, $state );
+    $self->{child_PID} = $pid;
     #########
     # Tell the other side to create an object
     $self->{object_options} ||= [];
@@ -306,13 +303,15 @@ sub _done
     my( $self ) = @_;
 
     $self->{debug} and warn "$self->{name}: _done";
-    $poe_kernel->sig( 'CHLD' );
     $self->{child_PID} = 0;
 
     # remove the wheel
     if ($self->{wheel}) {
+        $self->{debug} and warn "$self->{name}: drop wheel";
         $self->{wheel}->shutdown_stdin;
         delete $self->{wheel};
+        delete $self->{close};
+        delete $self->{CHLD};
     }
 
     # remove alias or decrease ref count
@@ -329,6 +328,21 @@ sub _done
     }
 }
 
+sub __is_done
+{
+    my( $self ) = @_;
+    return 0==$self->{child_PID};
+}
+
+sub _close_on
+{
+    my( $self, $what ) = @_;
+
+    $self->{$what}++;
+    if( $self->{close} and $self->{CHLD} ) {
+        $self->_done;
+    }
+}
 
 ######################################################
 # POE request to the parent object
@@ -687,18 +701,19 @@ sub __wheel_close {
     
     # We should see a CHLD soon
 #   warn "$self->{name}: $self->{package} Wheel closed, ieeeeeeee!\n";
+    $self->_close_on( 'close' );
 }
 
 sub _child
 {
     my( $self, $name, $PID, $ret ) = @_[ OBJECT, ARG0..ARG2 ];
     unless( $PID == ($self->{child_PID}||0) ) {
-        $self->{debug} and warn "$self->{name}: Got CHLD for $PID";
+        $self->{debug} and warn "$self->{name}: Got CHLD for $PID, not $self->{child_PID}\n";
         return;
     }
     $self->{debug} and warn "$self->{name}: Child $PID exited with $ret";
     $poe_kernel->sig_handled;
-    $self->_done;
+    $self->_close_on( 'CHLD' );
     return;
 }
 
@@ -713,7 +728,7 @@ sub OOB_response
     my $res = $input->{result};
 
     if( $input->{response} eq 'new' ) {
-        $self->{child_PID} = $input->{PID};
+        # $self->{child_PID} = $input->{PID};
         $self->{debug} and warn "$self->{name}: Child PID=$input->{PID}";
     }
     elsif( $input->{response} eq 'callback' ) {

@@ -87,13 +87,13 @@ close CONFIG;
 
 WriteMakefile(
 	NAME          => 'POE::Component::Generic',
-	AUTHOR        => 'Philip Gwyn <gwyn@cpan.org>',
+	AUTHOR        => 'Philip Gwyn <gwyn-at-cpan.org>',
 	ABSTRACT      => 'Generic non-blocking POE interface to any OO-module',
 	VERSION_FROM  => 'lib/POE/Component/Generic.pm', # finds $VERSION
     LICENSE       => 'perl',
 	PREREQ_PM     => {
 		'Test::More'        => 0.32,
-		'POE'               => 0.31,
+		'POE'               => 1,
         'Scalar::Util'      => 1,
 		'Devel::Symdump'	=> 2,
 		'Carp'			    => 0,

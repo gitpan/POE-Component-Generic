@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm 478 2009-05-06 18:19:09Z fil $
+# $Id: SSH2.pm 535 2009-09-11 12:39:36Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw( @ISA $TIMEOUT $VERSION );
 use         # hide from CPANTS
     Net::SSH2;
 
-$VERSION = '0.1201';
+$VERSION = '0.1202';
 @ISA = qw( POE::Component::Generic );
 $TIMEOUT = 100;
 
@@ -346,11 +346,10 @@ sub cmd
     # we'd never get here
 }
 
-sub DESTROY
-{
+*DESTROY = sub {        # Prevent the Subroutine DESTROY redefined message
     my( $self ) = @_;
     $Net::SSH2::CHILD->__remove_channel( $self ) if $Net::SSH2::CHILD;
-}
+};
 
 1;
 
@@ -614,39 +613,3 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-
-
-
-
-
-
-
-$Log$
-Revision 1.3  2006/04/13 18:52:05  fil
-New vs spawn in the examples
-Work around in PoCo::Generic::Net::SSH2 so that the PAUSE indexer
-        doesn't complain
-PoCo::Generic::Net::SSH2 now works with alt_fork=>1
-
-Revision 1.2  2006/04/12 08:13:22  fil
-Added documentation
-Added __callback_argument and __postback_arguement
-Use Scalar::Util::reftype instead of ref()
-Added __package_register
-Added PoCo::Generic::Net::SSH2->exec and ->cmd
-Fixed PoCo::Generic::Object->DESTROY
-Added test cases to improve test coverage
-
-Revision 1.1  2006/04/11 08:33:12  fil
-Added PoCo::Generic::Net::SSH2
-Added t/91_ssh2.t which tests the above
-Added t/90_ssh.t which tests Net::SSH::Perl
-Added options to Makefile.PL to config the above 2 tests
-Added Generic->package_register
-Added Generic->new options :
-            - packages to configure factory generated packages
-            - child_package so we can overload the Child process behaviour
-Object IDs now get incremented properly
-Child now uses get_requests to fetch the next requests
-

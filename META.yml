@@ -1,18 +1,26 @@
 --- #YAML:1.0
-name:                POE-Component-Generic
-version:             0.1201
-abstract:            Generic non-blocking POE interface to any OO-module
-license:             perl
-generated_by:        ExtUtils::MakeMaker version 6.36
-distribution_type:   module
-requires:     
-    Carp:                          0
-    Devel::Symdump:                2
-    POE:                           0.31
-    Scalar::Util:                  1
-    Test::More:                    0.32
-meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
+name:               POE-Component-Generic
+version:            0.1202
+abstract:           Generic non-blocking POE interface to any OO-module
 author:
-    - Philip Gwyn <gwyn@cpan.org>
+    - Philip Gwyn <gwyn-at-cpan.org>
+license:            perl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Carp:            0
+    Devel::Symdump:  2
+    POE:             1
+    Scalar::Util:    1
+    Test::More:      0.32
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.50
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

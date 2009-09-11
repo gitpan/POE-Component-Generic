@@ -1,5 +1,8 @@
 Revision history for POE::Component::Generic.
 
+0.1202 Fri Sep 11 2009
+    - Use POE::Wheel::Run->PID instead of $$ from the child
+
 0.1201 Wed May 06 2009
     - Fix a bunch of warnings that were previously hidden by POE turning off
         warnings.
