@@ -27,7 +27,10 @@ SKIP:
     unless( -x "/bin/sh" ) {
         skip "This test uses the Bourne shell (/bin/sh)", 3;
     }
-    
+    unless( -x "t/alt-fork" ) {
+        skip "Your archive tool failed to make t/alt-fork executable", 3;
+    }    
+
     my $delayed;
     my $generic;
     my $OK = 1;

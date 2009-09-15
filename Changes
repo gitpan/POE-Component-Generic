@@ -1,5 +1,11 @@
 Revision history for POE::Component::Generic.
 
+0.1203 Tue Sep 15 2009
+
+    - 21_alt_fork-x.t checks to make sure t/alt-fork is +x.  If not, skip
+      tests.  5.10.0 on Ubuntu wasn't setting +x on anything in t/
+        Thank you Naveed Massjouni.
+
 0.1202 Fri Sep 11 2009
     - Use POE::Wheel::Run->PID instead of $$ from the child
 

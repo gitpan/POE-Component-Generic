@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 536 2009-09-11 16:17:36Z fil $
+# $Id: Generic.pm 540 2009-09-15 14:22:58Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1202';
+$VERSION = '0.1203';
 
 
 ##########################################################################
@@ -1200,9 +1200,11 @@ C<spawn> or C<create>, searching in that order.
 
 =item packages
 
-Set the I<package signature> for packages that might be used.  This allows 
-you to configure the L</callbacks>, L</postbacks> and L</methods> for 
-objects that are returned by factory methods.
+Set the I<package signature> for packages that are be created with
+factory methods.
+This allows you to configure the L</callbacks>,
+L</postbacks> and L</methods> for objects that are returned by methods
+listed with the L</factories> parameter.
 
 Must be a hashref, keys are package names, values are either a B<scalar>,
 which will case the package will be scanned for methods, a B<arrayref>,

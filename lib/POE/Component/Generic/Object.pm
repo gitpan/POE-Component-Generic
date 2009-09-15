@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm 535 2009-09-11 12:39:36Z fil $
+# $Id: Object.pm 540 2009-09-15 14:22:58Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw($AUTOLOAD);
 
 use strict;
 
-our $VERSION = '0.1202';
+our $VERSION = '0.1203';
 
 ##################################################
 # Create the object
