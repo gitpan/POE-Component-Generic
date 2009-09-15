@@ -27,6 +27,7 @@ SKIP:
     unless( -x "/bin/sh" ) {
         skip "This test uses the Bourne shell (/bin/sh)", 3;
     }
+    eval { chmod 0755, 't/alt-fork' };
     unless( -x "t/alt-fork" ) {
         skip "Your archive tool failed to make t/alt-fork executable", 3;
     }    
