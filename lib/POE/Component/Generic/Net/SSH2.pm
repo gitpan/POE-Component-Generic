@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm 535 2009-09-11 12:39:36Z fil $
+# $Id: SSH2.pm 551 2009-09-16 14:28:15Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw( @ISA $TIMEOUT $VERSION );
 use         # hide from CPANTS
     Net::SSH2;
 
-$VERSION = '0.1202';
+$VERSION = '0.1205';
 @ISA = qw( POE::Component::Generic );
 $TIMEOUT = 100;
 
@@ -221,15 +221,18 @@ sub DEBUG () { 0 }
 *true_channel = \&channel;
 
 #################################
-*channel = sub {
-    my( $self, @args ) = @_;
-    # Blocking has to be on when setting up a channel
-    # And for ->exec and ->cmd, it seems, but ...
-    $self->blocking( 1 );
-    my $obj = true_channel( $self, @args );
-    warn "Can't create channel ".$self->error unless $obj;
-    return $obj;
-};
+{
+    no strict 'subs';
+    *channel = sub {
+        my( $self, @args ) = @_;
+        # Blocking has to be on when setting up a channel
+        # And for ->exec and ->cmd, it seems, but ...
+        $self->blocking( 1 );
+        my $obj = true_channel( $self, @args );
+        warn "Can't create channel ".$self->error unless $obj;
+        return $obj;
+    };
+}
 
 #################################
 # This method does the heavy-lifting for ->exec
@@ -346,10 +349,11 @@ sub cmd
     # we'd never get here
 }
 
-*DESTROY = sub {        # Prevent the Subroutine DESTROY redefined message
-    my( $self ) = @_;
-    $Net::SSH2::CHILD->__remove_channel( $self ) if $Net::SSH2::CHILD;
-};
+no strict 'subs';
+*DESTROY = sub {
+        my( $self ) = @_;
+        $Net::SSH2::CHILD->__remove_channel( $self ) if $Net::SSH2::CHILD;
+    };
 
 1;
 

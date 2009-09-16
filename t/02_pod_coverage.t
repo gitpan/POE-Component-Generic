@@ -33,7 +33,7 @@ pod_coverage_ok(
 
 pod_coverage_ok(
         "POE::Component::Generic::Net::SSH2",
-        { also_private => [ qr/^(DEBUG|spawn)$/ ], 
+        { also_private => [ qr/^(DEBUG|spawn|new)$/ ], 
         },
         "POE::Component::Generic::Net::SSH2, ignoring private functions",
 );

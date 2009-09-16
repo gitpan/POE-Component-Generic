@@ -5,6 +5,8 @@ use ExtUtils::MakeMaker;
 use Getopt::Long;
 use Data::Dumper;
 
+use 5.006;
+
 # Add in the Ex::MM::Coverage stuff.  But silently ignore failure.
 eval q{
     use ExtUtils::MakeMaker::Coverage;
