@@ -1,5 +1,11 @@
 Revision history for POE::Component::Generic.
 
+0.1300 Wed May 18 2011
+    - Bump copyright date
+    - Don't blindly call $obj->DESTROY, as per rt68062
+    - Confirmed to work with POE 1.311
+    - Tentatively removed the limit of alt_fork on Win32, as per rt67072
+
 0.1205 Wed Sep 16 2009
     - Tweak 02_pod_coverage.t
     - Require 5.6

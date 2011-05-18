@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm 551 2009-09-16 14:28:15Z fil $
+# $Id: SSH2.pm 759 2011-05-18 16:55:01Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw( @ISA $TIMEOUT $VERSION );
 use         # hide from CPANTS
     Net::SSH2;
 
-$VERSION = '0.1205';
+$VERSION = '0.1300';
 @ISA = qw( POE::Component::Generic );
 $TIMEOUT = 100;
 
@@ -610,7 +610,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE%3A%3AComponent%3A%3AGeneric
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Philip Gwyn.
+Copyright 2006, 2011 by Philip Gwyn.
 
 
 This library is free software; you can redistribute it and/or modify

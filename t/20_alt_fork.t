@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 20_alt_fork.t 161 2006-11-15 07:22:26Z fil $
+# $Id: 20_alt_fork.t 759 2011-05-18 16:55:01Z fil $
 
 use strict;
 
@@ -21,9 +21,9 @@ if( $ENV{HARNESS_PERL_SWITCHES} ) {
 SKIP:
 {
 
-    if( $^O eq 'MSWin32' ) {
-        skip "alt_fork not supported on MSWin32", 18;
-    }
+#    if( $^O eq 'MSWin32' ) {
+#        skip "alt_fork not supported on MSWin32", 18;
+#    }
     
     my $generic = POE::Component::Generic->spawn( 
               alias 		=> 'first',

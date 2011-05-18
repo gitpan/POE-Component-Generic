@@ -1,5 +1,5 @@
 package POE::Component::Generic::Object;
-# $Id: Object.pm 551 2009-09-16 14:28:15Z fil $
+# $Id: Object.pm 759 2011-05-18 16:55:01Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw($AUTOLOAD);
 
 use strict;
 
-our $VERSION = '0.1205';
+our $VERSION = '0.1300';
 
 ##################################################
 # Create the object
@@ -290,7 +290,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE%3A%3AComponent%3A%3AGeneric
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006-2008 by Philip Gwyn;
+Copyright 2006-2008, 2011 by Philip Gwyn;
 
 Copyright 2005 by David Davis and Teknikill Software.
 

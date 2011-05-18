@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t 504 2009-06-30 20:18:49Z fil $
+# $Id: 40_postback.t 759 2011-05-18 16:55:01Z fil $
 
 use strict;
 
@@ -19,7 +19,7 @@ if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;
 #    $alt_fork = 0;
 }
-$alt_fork = 0 if $^O eq 'MSWin32';
+#$alt_fork = 0 if $^O eq 'MSWin32';
 
 my $daemon=0;
 # eval "use POE::Component::Daemon; \$daemon++";

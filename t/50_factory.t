@@ -16,7 +16,7 @@ my $N = 1;
 if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;
 }
-$alt_fork = 0 if $^O eq 'MSWin32';
+#$alt_fork = 0 if $^O eq 'MSWin32';
 
 my $daemon=0;
 #eval "use POE::Component::Daemon; \$daemon++";

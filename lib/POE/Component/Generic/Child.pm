@@ -1,5 +1,5 @@
 package POE::Component::Generic::Child;
-# $Id: Child.pm 478 2009-05-06 18:19:09Z fil $
+# $Id: Child.pm 759 2011-05-18 16:55:01Z fil $
 
 # This is the object that does all the work in the child process
 
@@ -191,6 +191,11 @@ sub request
         elsif( defined $req->{wantarray} or $req->{factory} ) {
             $req->{result} = [ scalar $obj->$method( @$args ) ];
         }
+        elsif( $method eq 'DESTROY' and not $obj->can( $method ) ) {
+            # DESTROY is dispacted from Generic::DESTROY.  $obj might not
+            # implement it.  If it doesn't, we don't want the error produced
+            # by blindly calling it.
+        } 
         else {
             $obj->$method( @$args );
         }
@@ -416,7 +421,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=POE%3A%3AComponent%3A%3AGeneric
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006-2008 by Philip Gwyn;
+Copyright 2006-2008,2011 by Philip Gwyn;
 
 Copyright 2005 by David Davis and Teknikill Software.
 

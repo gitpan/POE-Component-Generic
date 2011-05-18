@@ -95,7 +95,7 @@ WriteMakefile(
     LICENSE       => 'perl',
 	PREREQ_PM     => {
 		'Test::More'        => 0.32,
-		'POE'               => 1,
+		'POE'               => 1.300,
         'Scalar::Util'      => 1,
 		'Devel::Symdump'	=> 2,
 		'Carp'			    => 0,

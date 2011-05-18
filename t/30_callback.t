@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 30_callback.t 162 2006-11-15 07:29:21Z fil $
+# $Id: 30_callback.t 759 2011-05-18 16:55:01Z fil $
 
 use strict;
 
@@ -18,7 +18,7 @@ if( $ENV{HARNESS_PERL_SWITCHES} ) {
     $N *= 5;
 #    $alt_fork = 0;
 }
-$alt_fork = 0 if $^O eq 'MSWin32';
+#$alt_fork = 0 if $^O eq 'MSWin32';
 
 
 my $generic = POE::Component::Generic->spawn( 

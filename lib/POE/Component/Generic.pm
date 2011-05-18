@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 551 2009-09-16 14:28:15Z fil $
+# $Id: Generic.pm 759 2011-05-18 16:55:01Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1205';
+$VERSION = '0.1300';
 
 
 ##########################################################################
@@ -26,7 +26,7 @@ sub spawn
 
     my $self = $package->new( @args );
 
-    if( $^O eq 'MSWin32' and $self->{alt_fork} ) {
+    if( $^O eq 'MSWin32' and $self->{alt_fork} and $POE::VERSION < 1.3 ) {
         carp "Sorry, alt_fork does not work on MSWin32.";
         delete $self->{alt_fork};
     }
@@ -1595,7 +1595,7 @@ based.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006-2009 by Philip Gwyn;
+Copyright 2006-2009,2011 by Philip Gwyn;
 
 Copyright 2005 by David Davis and Teknikill Software.
 
