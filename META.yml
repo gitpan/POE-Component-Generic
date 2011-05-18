@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               POE-Component-Generic
-version:            0.1300
+version:            0.1400
 abstract:           Generic non-blocking POE interface to any OO-module
 author:
     - Philip Gwyn <gwyn-at-cpan.org>
@@ -13,7 +13,7 @@ build_requires:
 requires:
     Carp:            0
     Devel::Symdump:  2
-    POE:             1.3
+    POE:             1
     Scalar::Util:    1
     Test::More:      0.32
 no_index:

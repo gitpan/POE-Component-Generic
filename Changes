@@ -1,5 +1,9 @@
 Revision history for POE::Component::Generic.
 
+0.1400 Wed May 18 2011
+    - Added ->kill()
+    - Added on_exit
+
 0.1300 Wed May 18 2011
     - Bump copyright date
     - Don't blindly call $obj->DESTROY, as per rt68062

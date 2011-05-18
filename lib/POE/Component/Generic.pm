@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 759 2011-05-18 16:55:01Z fil $
+# $Id: Generic.pm 762 2011-05-18 19:34:32Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1300';
+$VERSION = '0.1400';
 
 
 ##########################################################################
@@ -39,7 +39,7 @@ sub spawn
                             map { $_ => '__request1' }
                               keys %{$self->{package_map}{ $self->{package} }}
                          },
-                $self => [ qw(_start _stop shutdown _child __request2
+                $self => [ qw(_start _stop shutdown kill _child __request2
                               __wheel_close __wheel_err 
                               __wheel_out __wheel_stderr
                              ) 
@@ -94,6 +94,21 @@ sub new
                         @{ $self->{error} }{ qw( session event ) };
         } 
     }
+
+    #######
+    if( $self->{on_exit} ) {
+        my $r = ref $self->{on_exit};
+        unless( $r ) {
+            $self->{on_exit} = [ $poe_kernel->get_active_session, $r ];
+        }
+        elsif( 'ARRAY' eq $r or blessed $self->{on_exit} ) {
+            # POEx::URI is OK.
+        } 
+        else {
+            croak "on_exit must be a array reference, not $r";
+        }
+    }    
+
 
     #######
     POE::Component::Generic::Child::package_load( $self->{package} );
@@ -315,16 +330,26 @@ sub _done
     }
 
     # remove alias or decrease ref count
+    my @aliases;
     if( $self->{referenced} ) {
         if ( $self->{alias} ) {
             foreach my $alias ( $poe_kernel->alias_list() ) {
                 $self->{debug} and warn "$self->{name}: remove alias $alias";
                 $poe_kernel->alias_remove( $alias );
+                push @aliases, $alias;
             }
         } else {
             $poe_kernel->refcount_decrement($self->session_id() => __PACKAGE__);
         }
         $self->{referenced} = 0;
+    }
+
+    # Also need to clean up any pending
+    $self->__session_clear;
+
+    # Tell the user code about this
+    if( $self->{on_exit} ) {
+        $poe_kernel->post( @{$self->{on_exit}}, { objects=>\@aliases } );
     }
 }
 
@@ -417,10 +442,7 @@ sub __request
 
     # if we have an event to report to...make sure it stays around
     if ( $hash->{event} ) {
-        $poe_kernel->refcount_increment( $hash->{session} => $self->{name} );
-        # TODO : Above will explode if $hash->{session} isn't an extant
-        # session.  This is OK, but the error message will point here, not
-        # to the user's code.
+        $self->__session_inc( $hash );
     }
 
     if( $self->{callback_map}{$class}{ $method } ) {
@@ -436,7 +458,47 @@ sub __request
     return;
 }
 
+sub __session_inc
+{
+    my( $self, $hash ) = @_;
+    my $session = $self->__session_id( $hash );
+    
+    $poe_kernel->refcount_increment( $session => $self->{name} );
+    $self->{pending}{$session}++;
+}
 
+sub __session_dec
+{
+    my( $self, $hash ) = @_;
+    my $session = $self->__session_id( $hash );
+    
+    if( $self->{pending}{$session} ) {
+        $poe_kernel->refcount_decrement( $session => $self->{name} );
+        delete $self->{pending}{$session} unless $self->{pending}{$session}--;
+    }
+}
+
+sub __session_clear
+{
+    my( $self ) = @_;
+    foreach my $session ( keys %{ $self->{pending}||{} } ) {
+        while( $self->{pending}{$session} ) {
+            $self->__session_dec( { session=>$session } );
+        }
+    }
+}
+
+sub __session_id
+{
+    my( $self, $hash ) = @_;
+    my $session = $poe_kernel->alias_resolve( $hash->{session} );
+    # TODO : Above will explode if $hash->{session} isn't an extant
+    # session.  This is OK, but the error message will point here, not
+    # to the user's code.
+
+    return unless $session;
+    return $session->ID;
+}
 
 ##################################################
 # Prepare the callback definitions
@@ -784,7 +846,7 @@ sub response
     if ($event) {
         $self->{debug} and warn "$self->{name}: ($$) Reply to $session/$event";
         $poe_kernel->post( $session => $event, $input, @{$input->{result}} );
-        $poe_kernel->refcount_decrement( $session => $self->{name} );
+        $self->__session_dec( {session=>$session} );
     }
 }
 
@@ -793,6 +855,21 @@ sub response
 
 ############################################################################
 # Dual event and object methods
+
+sub kill {
+    unless (UNIVERSAL::isa($_[KERNEL],'POE::Kernel')) {
+        my $self = shift;
+        if ($poe_kernel and $self->session_id) {
+            $poe_kernel->call($self->session_id() => 'kill' => @_);
+        }
+        return;
+    }
+    
+    my ($kernel,$self,$sig) = @_[KERNEL,OBJECT,ARG0];
+    $self->{debug} and warn "$self->{name}: $self->{wheel}->kill( $sig )";
+    return unless $self->{wheel};
+    $self->{wheel}->kill( $sig );
+}
 
 sub shutdown {
     unless (UNIVERSAL::isa($_[KERNEL],'POE::Kernel')) {
@@ -1184,6 +1261,22 @@ C<confess>.
 A hashref of L<POE::Session> options that are passed to the component's
 session creator.
 
+=item on_exit
+
+An event that will be called when the child process exits.  This may be a
+L<POEx::URI> object, a scalar event name in the current session or an array.
+
+The event is invoked with any parameters you specified, followed by a
+hashref that contains C<objects>, which is a list of all object names it
+knows of.
+
+Examples:
+
+    { on_exit => URI->new( 'poe://session/event' ) }
+    { on_exit => 'event' }
+    { on_exit => [ $SESSIONID, $EVENT, $PARAMS ] }
+
+
 =item object_options
 
 An optional array ref of options that will be passed to the main object
@@ -1314,6 +1407,17 @@ undefined.
 
 Calling L</shutdown> will not cause the kernel to exit if you have other
 components or sessions keeping POE from doing so.
+
+
+=head2 kill
+
+    $generic->kill(SIGNAL)
+
+Sends sub-process a C<SIGNAL>.  
+
+You may send things like SIGTERM or SIGKILL.  This is a violent way to
+shutdown the component, but is necessary if you want to implement a timeout
+on your blocking code.
 
 
 =head2 session_id

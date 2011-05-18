@@ -1,5 +1,5 @@
 package POE::Component::Generic::Net::SSH2;
-# $Id: SSH2.pm 759 2011-05-18 16:55:01Z fil $
+# $Id: SSH2.pm 762 2011-05-18 19:34:32Z fil $
 
 use strict;
 
@@ -12,7 +12,7 @@ use vars qw( @ISA $TIMEOUT $VERSION );
 use         # hide from CPANTS
     Net::SSH2;
 
-$VERSION = '0.1300';
+$VERSION = '0.1400';
 @ISA = qw( POE::Component::Generic );
 $TIMEOUT = 100;
 
