@@ -1,5 +1,8 @@
 Revision history for POE::Component::Generic.
 
+0.1401 Aug 26 2011
+    - Added t/00_info.t
+
 0.1400 Wed May 18 2011
     - Added ->kill()
     - Added on_exit

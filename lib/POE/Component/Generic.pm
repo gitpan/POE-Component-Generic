@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 762 2011-05-18 19:34:32Z fil $
+# $Id: Generic.pm 808 2011-08-26 16:17:21Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1400';
+$VERSION = '0.1401';
 
 
 ##########################################################################
