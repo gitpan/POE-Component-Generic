@@ -1,7 +1,10 @@
 #!/usr/bin/perl -w
-# $Id: 15_stdout.t 128 2006-05-02 18:44:22Z fil $
+# $Id: 15_stdout.t 1044 2012-11-28 16:35:54Z fil $
 
 use strict;
+
+use FindBin;
+use lib "$FindBin::Bin/..";
 
 use Test::More tests => 3;
 use POE::Component::Generic;

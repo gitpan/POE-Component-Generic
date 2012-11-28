@@ -1,7 +1,10 @@
 #!/usr/bin/perl -w
-# $Id: 05_package.t 478 2009-05-06 18:19:09Z fil $
+# $Id: 05_package.t 1044 2012-11-28 16:35:54Z fil $
 
 use strict;
+
+use FindBin;
+use lib "$FindBin::Bin/..";
 
 use Test::More tests => 7;
 use POE;

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_postback.t 759 2011-05-18 16:55:01Z fil $
+# $Id: 40_postback.t 1044 2012-11-28 16:35:54Z fil $
 
 use strict;
 
@@ -9,6 +9,9 @@ use strict;
 sub DEBUG () { 0 }
 
 use Test::More tests => 14;
+
+use FindBin;
+use lib "$FindBin::Bin/..";
 
 use POE;
 use POE::Component::Generic;

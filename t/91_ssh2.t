@@ -2,6 +2,9 @@
 
 use strict;
 
+use FindBin;
+use lib "$FindBin::Bin/..";
+
 sub POE::Kernel::ASSERT_EVENTS () { 1 }
 
 my $tests = 27;

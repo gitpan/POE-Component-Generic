@@ -1,11 +1,14 @@
 #!/usr/bin/perl -w
-# $Id: 20_alt_fork.t 759 2011-05-18 16:55:01Z fil $
+# $Id: 20_alt_fork.t 1044 2012-11-28 16:35:54Z fil $
 
 use strict;
 
 # sub POE::Kernel::TRACE_REFCNT () { 1 }
 
 sub DEBUG () { 0 }
+
+use FindBin;
+use lib "$FindBin::Bin/..";
 
 use Test::More tests => 18;
 use POE::Component::Generic;
@@ -67,9 +70,10 @@ SKIP:
               is( $input->{method}, 'delay', "Callback for delay");
               is( $input->{wantarray}, 1, "Wantarray preserved");
               my $delta = abs( $delay - $N );
-              ok( ($delta <= 1), "Waited $N seconds")
-                  or warn "before=$before after=$after delay=$delay";
-
+            my $allow = 1;
+            $allow = 5 if $ENV{AUTOMATED_TESTING};
+            ok( ($delta <= $allow), "Waited $N seconds")
+                or warn "before=$before after=$after delay=$delay allow=$allow";
               
               $poe_kernel->yield( 'call' );
           },

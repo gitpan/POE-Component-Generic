@@ -1,11 +1,14 @@
 #!/usr/bin/perl -w
-# $Id: 30_callback.t 759 2011-05-18 16:55:01Z fil $
+# $Id: 30_callback.t 1044 2012-11-28 16:35:54Z fil $
 
 use strict;
 
 # sub POE::Kernel::TRACE_REFCNT () { 1 }
 
 sub DEBUG () { 0 }
+
+use FindBin;
+use lib "$FindBin::Bin/..";
 
 use Test::More tests => 16;
 

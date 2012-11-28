@@ -3,6 +3,9 @@
 
 use strict;
 
+use FindBin;
+use lib "$FindBin::Bin/..";
+
 use Test::More tests => 3;
 use POE::Component::Generic;
 use POE::Session;

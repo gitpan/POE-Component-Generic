@@ -2,6 +2,9 @@
 
 use strict;
 
+use FindBin;
+use lib "$FindBin::Bin/..";
+
 my $tests = 5;
 use Test::More ( tests => 5 );
 use POE;

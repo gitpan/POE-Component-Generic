@@ -1,7 +1,10 @@
 #!/usr/bin/perl -w
-# $Id: 10_simple.t 128 2006-05-02 18:44:22Z fil $
+# $Id: 10_simple.t 1044 2012-11-28 16:35:54Z fil $
 
 use strict;
+
+use FindBin;
+use lib "$FindBin::Bin/..";
 
 use Test::More tests => 20;
 use POE::Component::Generic;
@@ -51,9 +54,10 @@ POE::Session->create(
             is( $input->{method}, 'delay', "Callback for delay");
             is( $input->{wantarray}, 1, "Wantarray preserved");
             my $delta = abs( $delay - $N );
-            ok( ($delta <= 1), "Waited $N seconds")
-                or warn "before=$before after=$after delay=$delay";
-
+            my $allow = 1;
+            $allow = 5 if $ENV{AUTOMATED_TESTING};
+            ok( ($delta <= $allow), "Waited $N seconds")
+                or warn "before=$before after=$after delay=$delay allow=$allow";
             
             $poe_kernel->yield( 'post' );
         },

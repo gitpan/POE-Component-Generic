@@ -8,6 +8,9 @@ sub DEBUG () { 0 }
 
 use Test::More tests => 19;
 
+use FindBin;
+use lib "$FindBin::Bin/..";
+
 use POE;
 use POE::Component::Generic;
 
