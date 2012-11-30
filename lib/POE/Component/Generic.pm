@@ -1,5 +1,5 @@
 package POE::Component::Generic;
-# $Id: Generic.pm 1044 2012-11-28 16:35:54Z fil $
+# $Id: Generic.pm 1047 2012-11-30 19:53:13Z fil $
 
 use strict;
 
@@ -15,7 +15,7 @@ use vars qw($AUTOLOAD $VERSION);
 use Config;
 use Scalar::Util qw( reftype blessed );
 
-$VERSION = '0.1402';
+$VERSION = '0.1403';
 
 
 ##########################################################################
@@ -99,7 +99,7 @@ sub new
     if( $self->{on_exit} ) {
         my $r = ref $self->{on_exit};
         unless( $r ) {
-            $self->{on_exit} = [ $poe_kernel->get_active_session, $r ];
+            $self->{on_exit} = [ $poe_kernel->get_active_session, $self->{on_exit} ];
         }
         elsif( 'ARRAY' eq $r or blessed $self->{on_exit} ) {
             # POEx::URI is OK.
@@ -762,7 +762,6 @@ sub __wheel_close {
     warn "$self->{name}: Wheel closed\n" if ($self->{debug});
     
     # We should see a CHLD soon
-#   warn "$self->{name}: $self->{package} Wheel closed, ieeeeeeee!\n";
     $self->_close_on( 'close' );
 }
 

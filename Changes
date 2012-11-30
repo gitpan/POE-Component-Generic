@@ -1,5 +1,8 @@
 Revision history for POE::Component::Generic.
 
+0.1403 Nov 30 2012
+    - on_exit() has been broken for ... 1.5 years
+
 0.1402 Nov 28 2011
     - Use FindBin to get t:: into @INC
     - Allow test delay to be long to deal with slow smokers

@@ -1,15 +1,26 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         POE-Component-Client-DAAP
-version:      0.01
-version_from: lib/POE/Component/Client/DAAP.pm
-installdirs:  site
+---
+abstract: 'Generic non-blocking POE interface to any OO-module'
+author:
+  - 'Philip Gwyn <gwyn -at- cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.112150'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: POE-Component-Generic
+no_index:
+  directory:
+    - t
+    - inc
 requires:
-    Carp:                          
-    Devel::Symdump:                
-    Net::DAAP::Client:                   
-    POE:                           0.31
-    Test::More:                    0.32
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+  Carp: 0
+  Devel::Symdump: 2
+  POE: 1.311
+  Scalar::Util: 1
+  Test::More: 0.32
+version: 0.1403

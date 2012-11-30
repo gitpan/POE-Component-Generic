@@ -36,3 +36,4 @@ t/P40.pm
 t/P4.pm
 t/P50.pm
 t/alt-fork
+META.json                                Module JSON meta-data (added by MakeMaker)
